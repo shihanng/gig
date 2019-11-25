@@ -25,30 +25,51 @@ func main() {
 	if err != nil && err != git.ErrRepositoryAlreadyExists {
 		log.Fatal(err)
 	}
-	if err := readFile(os.Stdout); err != nil {
+
+	files := []gitignoreFile{
+		{
+			name: "Go",
+			path: filepath.Join(`.`, path, `templates`, `Go.gitignore`),
+		},
+	}
+
+	if err := readFile(os.Stdout, files...); err != nil {
 		log.Fatal(err)
 	}
 }
 
-const filename = `Go.gitignore`
+type gitignoreFile struct {
+	name string
+	path string
+}
 
-func readFile(w io.Writer) error {
-	file, err := os.Open(filepath.Join(`.`, path, `templates`, filename))
-	if err != nil {
-		return fmt.Errorf("read file: %v", err)
-	}
-	defer file.Close()
+func readFile(w io.Writer, files ...gitignoreFile) error {
+	for _, file := range files {
+		err := func(name, path string) error {
+			file, err := os.Open(path)
+			if err != nil {
+				return fmt.Errorf("read file: %v", err)
+			}
+			defer file.Close()
 
-	scanner := bufio.NewScanner(file)
+			scanner := bufio.NewScanner(file)
 
-	for scanner.Scan() {
-		if _, err := io.WriteString(w, scanner.Text()+"\n"); err != nil {
-			return fmt.Errorf("read file: %v", err)
+			for scanner.Scan() {
+				if _, err := io.WriteString(w, scanner.Text()+"\n"); err != nil {
+					return fmt.Errorf("read file: %v", err)
+				}
+			}
+
+			if err := scanner.Err(); err != nil {
+				return fmt.Errorf("read file: %v", err)
+			}
+
+			return nil
+		}(file.name, file.path)
+
+		if err != nil {
+			return err
 		}
-	}
-
-	if err := scanner.Err(); err != nil {
-		return fmt.Errorf("read file: %v", err)
 	}
 
 	return nil
