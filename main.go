@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -24,21 +25,31 @@ func main() {
 	if err != nil && err != git.ErrRepositoryAlreadyExists {
 		log.Fatal(err)
 	}
-	readFile()
+	if err := readFile(os.Stdout); err != nil {
+		log.Fatal(err)
+	}
 }
 
 const filename = `Go.gitignore`
 
-func readFile() {
+func readFile(w io.Writer) error {
 	file, err := os.Open(filepath.Join(`.`, path, `templates`, filename))
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("read file: %v", err)
 	}
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 
-	for scanner.Scan() { // internally, it advances token based on sperator
-		fmt.Println(scanner.Text()) // token in unicode-char
+	for scanner.Scan() {
+		if _, err := io.WriteString(w, scanner.Text()+"\n"); err != nil {
+			return fmt.Errorf("read file: %v", err)
+		}
 	}
+
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("read file: %v", err)
+	}
+
+	return nil
 }
