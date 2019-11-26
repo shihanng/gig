@@ -36,6 +36,13 @@ func main() {
 	if err := readFile(os.Stdout, files...); err != nil {
 		log.Fatal(err)
 	}
+
+	orders, err := readOrder(`./config/ignorer/cache/templates/order`)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(orders)
 }
 
 type gitignoreFile struct {
@@ -73,4 +80,34 @@ func readFile(w io.Writer, files ...gitignoreFile) error {
 	}
 
 	return nil
+}
+
+func readOrder(path string) (map[string]int, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("read order: %v", err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+
+	orders := make(map[string]int)
+
+	for n := 0; scanner.Scan(); {
+		line := scanner.Text()
+		if !isComment(line) {
+			orders[line] = n
+			n++
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, fmt.Errorf("read order: %v", err)
+	}
+
+	return orders, nil
+}
+
+func isComment(line string) bool {
+	return line != "" && line[0] == '#'
 }
