@@ -119,6 +119,12 @@ type template struct {
 	type_ string
 }
 
+var typeOrder = map[string]int{
+	`gitignore`: 0,
+	`patch`:     1,
+	`stack`:     2,
+}
+
 type orderer struct {
 	templates []template
 	special   map[string]int
@@ -135,6 +141,7 @@ func (o *orderer) Swap(i, j int) {
 func (o *orderer) Less(i, j int) bool {
 	for _, lessFn := range []func(int, int) bool{
 		o.lessSpecial,
+		o.lessName,
 	} {
 		less := lessFn
 		switch {
@@ -144,7 +151,7 @@ func (o *orderer) Less(i, j int) bool {
 			return false
 		}
 	}
-	return o.lessName(i, j)
+	return o.lessType(i, j)
 }
 
 func (o *orderer) lessSpecial(i, j int) bool {
@@ -166,6 +173,22 @@ func (o *orderer) lessSpecial(i, j int) bool {
 func (o *orderer) lessName(i, j int) bool {
 	in, jn := canon(o.templates[i].name), canon(o.templates[j].name)
 	return in < jn
+}
+
+func (o *orderer) lessType(i, j int) bool {
+	it, jt := canon(o.templates[i].type_), canon(o.templates[j].type_)
+
+	io, ok := typeOrder[it]
+	if !ok {
+		return false
+	}
+
+	jo, ok := typeOrder[jt]
+	if !ok {
+		return false
+	}
+
+	return io < jo
 }
 
 func Sort(o orderer) orderer {

@@ -57,6 +57,23 @@ func TestSort(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "type",
+			args: args{
+				o: orderer{
+					templates: []template{
+						{name: "A", type_: "Patch"},
+						{name: "A", type_: "GitIgnore"},
+					},
+				},
+			},
+			want: orderer{
+				templates: []template{
+					{name: "A", type_: "GitIgnore"},
+					{name: "A", type_: "Patch"},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
