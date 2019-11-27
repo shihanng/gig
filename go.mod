@@ -1,4 +1,4 @@
-module github.com/shihanng/ignorer
+module github.com/shihanng/gi
 
 go 1.13
 

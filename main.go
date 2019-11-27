@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	path       = `config/ignorer/cache`
+	path       = `config/gi/cache`
 	sourceRepo = `https://github.com/toptal/gitignore.git`
 )
 
@@ -39,7 +39,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	orders, err := readOrder(`./config/ignorer/cache/templates/order`)
+	orders, err := readOrder(`./config/gi/cache/templates/order`)
 	if err != nil {
 		log.Fatal(err)
 	}
