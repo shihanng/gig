@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -28,15 +29,31 @@ func main() {
 		log.Fatal(err)
 	}
 
-	files := []gitignoreFile{
-		{
-			name: "Go",
-			path: filepath.Join(`.`, path, `templates`, `Go.gitignore`),
-		},
+	args := os.Args[1:]
+	languages := make(map[string]bool, len(args))
+
+	for _, arg := range args {
+		languages[canon(arg)] = true
 	}
 
-	if err := readFile(os.Stdout, files...); err != nil {
+	files, err := ioutil.ReadDir(filepath.Join(`.`, path, `templates`))
+	if err != nil {
 		log.Fatal(err)
+	}
+
+	templates := []template{}
+
+	for _, f := range files {
+		filename := f.Name()
+		ext := filepath.Ext(filename)
+		base := strings.TrimSuffix(filename, ext)
+
+		if languages[canon(base)] {
+			templates = append(templates, template{
+				name:  base,
+				type_: ext,
+			})
+		}
 	}
 
 	orders, err := readOrder(`./config/gi/cache/templates/order`)
@@ -44,18 +61,21 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(orders)
+	o := orderer{
+		templates: templates,
+		special:   orders,
+	}
+	o = Sort(o)
+
+	if err := readFile(os.Stdout, o.templates...); err != nil {
+		log.Fatal(err)
+	}
 }
 
-type gitignoreFile struct {
-	name string
-	path string
-}
-
-func readFile(w io.Writer, files ...gitignoreFile) error {
+func readFile(w io.Writer, files ...template) error {
 	for _, file := range files {
-		err := func(name, path string) error {
-			file, err := os.Open(path)
+		err := func(name, ext string) error {
+			file, err := os.Open(filepath.Join(`.`, path, `templates`, name+ext))
 			if err != nil {
 				return fmt.Errorf("read file: %v", err)
 			}
@@ -74,7 +94,7 @@ func readFile(w io.Writer, files ...gitignoreFile) error {
 			}
 
 			return nil
-		}(file.name, file.path)
+		}(file.name, file.type_)
 
 		if err != nil {
 			return err
@@ -120,9 +140,9 @@ type template struct {
 }
 
 var typeOrder = map[string]int{
-	`gitignore`: 0,
-	`patch`:     1,
-	`stack`:     2,
+	`.gitignore`: 0,
+	`.patch`:     1,
+	`.stack`:     2,
 }
 
 type orderer struct {
