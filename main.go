@@ -8,10 +8,10 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 
 	"github.com/shihanng/gi/internal/order"
+	"github.com/shihanng/gi/internal/template"
 	"gopkg.in/src-d/go-git.v4"
 )
 
@@ -34,7 +34,7 @@ func main() {
 	languages := make(map[string]bool, len(args))
 
 	for _, arg := range args {
-		languages[canon(arg)] = true
+		languages[template.Canon(arg)] = true
 	}
 
 	files, err := ioutil.ReadDir(filepath.Join(`.`, path, `templates`))
@@ -42,18 +42,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	templates := []template{}
+	templates := []template.Template{}
 
 	for _, f := range files {
 		filename := f.Name()
 		ext := filepath.Ext(filename)
 		base := strings.TrimSuffix(filename, ext)
 
-		if languages[canon(base)] {
-			templates = append(templates, template{
-				name:  base,
-				type_: ext,
-			})
+		if languages[template.Canon(base)] {
+			templates = append(templates, template.Template{Name: base, Type_: ext})
 		}
 	}
 
@@ -62,18 +59,18 @@ func main() {
 		log.Fatal(err)
 	}
 
-	o := orderer{
-		templates: templates,
-		special:   orders,
+	o := template.Orderer{
+		Templates: templates,
+		Special:   orders,
 	}
-	o = Sort(o)
+	o = template.Sort(o)
 
-	if err := readFile(os.Stdout, o.templates...); err != nil {
+	if err := readFile(os.Stdout, o.Templates...); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func readFile(w io.Writer, files ...template) error {
+func readFile(w io.Writer, files ...template.Template) error {
 	for _, file := range files {
 		err := func(name, ext string) error {
 			file, err := os.Open(filepath.Join(`.`, path, `templates`, name+ext))
@@ -95,7 +92,7 @@ func readFile(w io.Writer, files ...template) error {
 			}
 
 			return nil
-		}(file.name, file.type_)
+		}(file.Name, file.Type_)
 
 		if err != nil {
 			return err
@@ -103,90 +100,4 @@ func readFile(w io.Writer, files ...template) error {
 	}
 
 	return nil
-}
-
-type template struct {
-	name  string
-	type_ string
-}
-
-var typeOrder = map[string]int{
-	`.gitignore`: 0,
-	`.patch`:     1,
-	`.stack`:     2,
-}
-
-type orderer struct {
-	templates []template
-	special   map[string]int
-}
-
-func (o *orderer) Len() int {
-	return len(o.templates)
-}
-
-func (o *orderer) Swap(i, j int) {
-	o.templates[i], o.templates[j] = o.templates[j], o.templates[i]
-}
-
-func (o *orderer) Less(i, j int) bool {
-	for _, lessFn := range []func(int, int) bool{
-		o.lessSpecial,
-		o.lessName,
-	} {
-		less := lessFn
-		switch {
-		case less(i, j):
-			return true
-		case less(j, i):
-			return false
-		}
-	}
-	return o.lessType(i, j)
-}
-
-func (o *orderer) lessSpecial(i, j int) bool {
-	in, jn := canon(o.templates[i].name), canon(o.templates[j].name)
-
-	io, ok := o.special[in]
-	if !ok {
-		return false
-	}
-
-	jo, ok := o.special[jn]
-	if !ok {
-		return false
-	}
-
-	return io < jo
-}
-
-func (o *orderer) lessName(i, j int) bool {
-	in, jn := canon(o.templates[i].name), canon(o.templates[j].name)
-	return in < jn
-}
-
-func (o *orderer) lessType(i, j int) bool {
-	it, jt := canon(o.templates[i].type_), canon(o.templates[j].type_)
-
-	io, ok := typeOrder[it]
-	if !ok {
-		return false
-	}
-
-	jo, ok := typeOrder[jt]
-	if !ok {
-		return false
-	}
-
-	return io < jo
-}
-
-func Sort(o orderer) orderer {
-	sort.Sort(&o)
-	return o
-}
-
-func canon(v string) string {
-	return strings.ToLower(v)
 }
