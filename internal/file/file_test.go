@@ -1,4 +1,4 @@
-package template
+package file
 
 import (
 	"testing"
@@ -19,14 +19,14 @@ func TestSort(t *testing.T) {
 			name: "simple",
 			args: args{
 				o: Orderer{
-					Templates: []Template{
+					Files: []File{
 						{Name: "B"},
 						{Name: "A"},
 					},
 				},
 			},
 			want: Orderer{
-				Templates: []Template{
+				Files: []File{
 					{Name: "A"},
 					{Name: "B"},
 				},
@@ -36,7 +36,7 @@ func TestSort(t *testing.T) {
 			name: "special",
 			args: args{
 				o: Orderer{
-					Templates: []Template{
+					Files: []File{
 						{Name: "B"},
 						{Name: "A"},
 					},
@@ -47,7 +47,7 @@ func TestSort(t *testing.T) {
 				},
 			},
 			want: Orderer{
-				Templates: []Template{
+				Files: []File{
 					{Name: "B"},
 					{Name: "A"},
 				},
@@ -61,16 +61,16 @@ func TestSort(t *testing.T) {
 			name: "type",
 			args: args{
 				o: Orderer{
-					Templates: []Template{
-						{Name: "A", Type_: ".Patch"},
-						{Name: "A", Type_: ".GitIgnore"},
+					Files: []File{
+						{Name: "A", Typ: ".Patch"},
+						{Name: "A", Typ: ".GitIgnore"},
 					},
 				},
 			},
 			want: Orderer{
-				Templates: []Template{
-					{Name: "A", Type_: ".GitIgnore"},
-					{Name: "A", Type_: ".Patch"},
+				Files: []File{
+					{Name: "A", Typ: ".GitIgnore"},
+					{Name: "A", Typ: ".Patch"},
 				},
 			},
 		},

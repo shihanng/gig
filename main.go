@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/shihanng/gi/internal/file"
 	"github.com/shihanng/gi/internal/order"
-	"github.com/shihanng/gi/internal/template"
 	"gopkg.in/src-d/go-git.v4"
 )
 
@@ -34,7 +34,7 @@ func main() {
 	languages := make(map[string]bool, len(args))
 
 	for _, arg := range args {
-		languages[template.Canon(arg)] = true
+		languages[file.Canon(arg)] = true
 	}
 
 	files, err := ioutil.ReadDir(filepath.Join(`.`, path, `templates`))
@@ -42,15 +42,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	templates := []template.Template{}
+	templates := []file.File{}
 
 	for _, f := range files {
 		filename := f.Name()
 		ext := filepath.Ext(filename)
 		base := strings.TrimSuffix(filename, ext)
 
-		if languages[template.Canon(base)] {
-			templates = append(templates, template.Template{Name: base, Type_: ext})
+		if languages[file.Canon(base)] {
+			templates = append(templates, file.File{Name: base, Typ: ext})
 		}
 	}
 
@@ -59,18 +59,18 @@ func main() {
 		log.Fatal(err)
 	}
 
-	o := template.Orderer{
+	o := file.Orderer{
 		Templates: templates,
 		Special:   orders,
 	}
-	o = template.Sort(o)
+	o = file.Sort(o)
 
-	if err := readFile(os.Stdout, o.Templates...); err != nil {
+	if err := readFile(os.Stdout, o.Files...); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func readFile(w io.Writer, files ...template.Template) error {
+func readFile(w io.Writer, files ...file.File) error {
 	for _, file := range files {
 		err := func(name, ext string) error {
 			file, err := os.Open(filepath.Join(`.`, path, `templates`, name+ext))
@@ -92,7 +92,7 @@ func readFile(w io.Writer, files ...template.Template) error {
 			}
 
 			return nil
-		}(file.Name, file.Type_)
+		}(file.Name, file.Typ)
 
 		if err != nil {
 			return err

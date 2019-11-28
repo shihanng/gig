@@ -1,32 +1,32 @@
-package template
+package file
 
 import (
 	"sort"
 	"strings"
 )
 
-type Template struct {
-	Name  string
-	Type_ string
+type File struct {
+	Name string
+	Typ  string
 }
 
-var typeOrder = map[string]int{
+var typOrder = map[string]int{
 	`.gitignore`: 0,
 	`.patch`:     1,
 	`.stack`:     2,
 }
 
 type Orderer struct {
-	Templates []Template
-	Special   map[string]int
+	Files   []File
+	Special map[string]int
 }
 
 func (o *Orderer) Len() int {
-	return len(o.Templates)
+	return len(o.Files)
 }
 
 func (o *Orderer) Swap(i, j int) {
-	o.Templates[i], o.Templates[j] = o.Templates[j], o.Templates[i]
+	o.Files[i], o.Files[j] = o.Files[j], o.Files[i]
 }
 
 func (o *Orderer) Less(i, j int) bool {
@@ -46,7 +46,7 @@ func (o *Orderer) Less(i, j int) bool {
 }
 
 func (o *Orderer) lessSpecial(i, j int) bool {
-	in, jn := Canon(o.Templates[i].Name), Canon(o.Templates[j].Name)
+	in, jn := Canon(o.Files[i].Name), Canon(o.Files[j].Name)
 
 	io, ok := o.Special[in]
 	if !ok {
@@ -62,19 +62,19 @@ func (o *Orderer) lessSpecial(i, j int) bool {
 }
 
 func (o *Orderer) lessName(i, j int) bool {
-	in, jn := Canon(o.Templates[i].Name), Canon(o.Templates[j].Name)
+	in, jn := Canon(o.Files[i].Name), Canon(o.Files[j].Name)
 	return in < jn
 }
 
 func (o *Orderer) lessType(i, j int) bool {
-	it, jt := Canon(o.Templates[i].Type_), Canon(o.Templates[j].Type_)
+	it, jt := Canon(o.Files[i].Typ), Canon(o.Files[j].Typ)
 
-	io, ok := typeOrder[it]
+	io, ok := typOrder[it]
 	if !ok {
 		return false
 	}
 
-	jo, ok := typeOrder[jt]
+	jo, ok := typOrder[jt]
 	if !ok {
 		return false
 	}
