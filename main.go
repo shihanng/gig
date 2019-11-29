@@ -42,7 +42,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	templates := []file.File{}
+	giFiles := []file.File{}
 
 	for _, f := range files {
 		filename := f.Name()
@@ -50,7 +50,7 @@ func main() {
 		base := strings.TrimSuffix(filename, ext)
 
 		if languages[file.Canon(base)] {
-			templates = append(templates, file.File{Name: base, Typ: ext})
+			giFiles = append(giFiles, file.File{Name: base, Typ: ext})
 		}
 	}
 
@@ -59,13 +59,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	o := file.Orderer{
-		Templates: templates,
-		Special:   orders,
-	}
-	o = file.Sort(o)
+	giFiles = file.Sort(giFiles, orders)
 
-	if err := readFile(os.Stdout, o.Files...); err != nil {
+	if err := readFile(os.Stdout, giFiles...); err != nil {
 		log.Fatal(err)
 	}
 }

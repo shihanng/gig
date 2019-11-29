@@ -10,29 +10,42 @@ type File struct {
 	Typ  string
 }
 
+func Sort(f []File, special map[string]int) []File {
+	s := Sorter{
+		Files:   f,
+		Special: special,
+	}
+	sort.Sort(&s)
+	return s.Files
+}
+
+func Canon(v string) string {
+	return strings.ToLower(v)
+}
+
 var typOrder = map[string]int{
 	`.gitignore`: 0,
 	`.patch`:     1,
 	`.stack`:     2,
 }
 
-type Orderer struct {
+type Sorter struct {
 	Files   []File
 	Special map[string]int
 }
 
-func (o *Orderer) Len() int {
-	return len(o.Files)
+func (s *Sorter) Len() int {
+	return len(s.Files)
 }
 
-func (o *Orderer) Swap(i, j int) {
-	o.Files[i], o.Files[j] = o.Files[j], o.Files[i]
+func (s *Sorter) Swap(i, j int) {
+	s.Files[i], s.Files[j] = s.Files[j], s.Files[i]
 }
 
-func (o *Orderer) Less(i, j int) bool {
+func (s *Sorter) Less(i, j int) bool {
 	for _, lessFn := range []func(int, int) bool{
-		o.lessSpecial,
-		o.lessName,
+		s.lessSpecial,
+		s.lessName,
 	} {
 		less := lessFn
 		switch {
@@ -42,18 +55,18 @@ func (o *Orderer) Less(i, j int) bool {
 			return false
 		}
 	}
-	return o.lessType(i, j)
+	return s.lessType(i, j)
 }
 
-func (o *Orderer) lessSpecial(i, j int) bool {
-	in, jn := Canon(o.Files[i].Name), Canon(o.Files[j].Name)
+func (s *Sorter) lessSpecial(i, j int) bool {
+	in, jn := Canon(s.Files[i].Name), Canon(s.Files[j].Name)
 
-	io, ok := o.Special[in]
+	io, ok := s.Special[in]
 	if !ok {
 		return false
 	}
 
-	jo, ok := o.Special[jn]
+	jo, ok := s.Special[jn]
 	if !ok {
 		return false
 	}
@@ -61,13 +74,13 @@ func (o *Orderer) lessSpecial(i, j int) bool {
 	return io < jo
 }
 
-func (o *Orderer) lessName(i, j int) bool {
-	in, jn := Canon(o.Files[i].Name), Canon(o.Files[j].Name)
+func (s *Sorter) lessName(i, j int) bool {
+	in, jn := Canon(s.Files[i].Name), Canon(s.Files[j].Name)
 	return in < jn
 }
 
-func (o *Orderer) lessType(i, j int) bool {
-	it, jt := Canon(o.Files[i].Typ), Canon(o.Files[j].Typ)
+func (s *Sorter) lessType(i, j int) bool {
+	it, jt := Canon(s.Files[i].Typ), Canon(s.Files[j].Typ)
 
 	io, ok := typOrder[it]
 	if !ok {
@@ -80,13 +93,4 @@ func (o *Orderer) lessType(i, j int) bool {
 	}
 
 	return io < jo
-}
-
-func Sort(o Orderer) Orderer {
-	sort.Sort(&o)
-	return o
-}
-
-func Canon(v string) string {
-	return strings.ToLower(v)
 }
