@@ -10,17 +10,17 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/OpenPeeDeeP/xdg"
 	"github.com/shihanng/gi/internal/file"
 	"github.com/shihanng/gi/internal/order"
 	"gopkg.in/src-d/go-git.v4"
 )
 
-const (
-	path       = `config/gi/cache`
-	sourceRepo = `https://github.com/toptal/gitignore.git`
-)
+const sourceRepo = `https://github.com/toptal/gitignore.git`
 
 func main() {
+	path := filepath.Join(xdg.CacheHome(), `gi`)
+
 	_, err := git.PlainClone(path, false, &git.CloneOptions{
 		URL:      sourceRepo,
 		Depth:    1,
@@ -37,7 +37,7 @@ func main() {
 		languages[file.Canon(arg)] = true
 	}
 
-	files, err := ioutil.ReadDir(filepath.Join(`.`, path, `templates`))
+	files, err := ioutil.ReadDir(filepath.Join(path, `templates`))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -54,22 +54,22 @@ func main() {
 		}
 	}
 
-	orders, err := order.ReadOrder(`./config/gi/cache/templates/order`)
+	orders, err := order.ReadOrder(filepath.Join(path, `templates`, `order`))
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	giFiles = file.Sort(giFiles, orders)
 
-	if err := readFile(os.Stdout, giFiles...); err != nil {
+	if err := readFile(os.Stdout, path, giFiles...); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func readFile(w io.Writer, files ...file.File) error {
+func readFile(w io.Writer, repoPath string, files ...file.File) error {
 	for _, file := range files {
 		err := func(name, ext string) error {
-			file, err := os.Open(filepath.Join(`.`, path, `templates`, name+ext))
+			file, err := os.Open(filepath.Join(repoPath, `templates`, name+ext))
 			if err != nil {
 				return fmt.Errorf("read file: %v", err)
 			}

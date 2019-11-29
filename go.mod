@@ -3,6 +3,7 @@ module github.com/shihanng/gi
 go 1.13
 
 require (
+	github.com/OpenPeeDeeP/xdg v0.2.0
 	github.com/stretchr/testify v1.3.0
 	golang.org/x/crypto v0.0.0-20191122220453-ac88ee75c92c // indirect
 	golang.org/x/net v0.0.0-20191125084936-ffdde1057850 // indirect
