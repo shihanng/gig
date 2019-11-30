@@ -10,6 +10,7 @@ func TestReadOrder(t *testing.T) {
 	type args struct {
 		path string
 	}
+
 	tests := []struct {
 		name      string
 		args      args
@@ -39,6 +40,7 @@ func TestReadOrder(t *testing.T) {
 			assertion: assert.Error,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := ReadOrder(tt.args.path)

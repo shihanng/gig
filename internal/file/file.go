@@ -78,17 +78,12 @@ func Sort(f []File, special map[string]int) []File {
 		Special: special,
 	}
 	sort.Sort(&s)
+
 	return s.Files
 }
 
 func Canon(v string) string {
 	return strings.ToLower(v)
-}
-
-var typOrder = map[string]int{
-	`.gitignore`: 0,
-	`.patch`:     1,
-	`.stack`:     2,
 }
 
 type Sorter struct {
@@ -110,6 +105,7 @@ func (s *Sorter) Less(i, j int) bool {
 		s.lessName,
 	} {
 		less := lessFn
+
 		switch {
 		case less(i, j):
 			return true
@@ -117,6 +113,7 @@ func (s *Sorter) Less(i, j int) bool {
 			return false
 		}
 	}
+
 	return s.lessType(i, j)
 }
 
@@ -142,6 +139,12 @@ func (s *Sorter) lessName(i, j int) bool {
 }
 
 func (s *Sorter) lessType(i, j int) bool {
+	typOrder := map[string]int{
+		`.gitignore`: 0,
+		`.patch`:     1,
+		`.stack`:     2,
+	}
+
 	it, jt := Canon(s.Files[i].Typ), Canon(s.Files[j].Typ)
 
 	io, ok := typOrder[it]

@@ -18,6 +18,7 @@ func TestFilter(t *testing.T) {
 		directory string
 		filter    map[string]bool
 	}
+
 	tests := []struct {
 		name      string
 		args      args
@@ -49,6 +50,7 @@ func TestFilter(t *testing.T) {
 			assertion: assert.Error,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := Filter(tt.args.directory, tt.args.filter)
@@ -62,6 +64,7 @@ func TestCompose(t *testing.T) {
 	type args struct {
 		files []File
 	}
+
 	tests := []struct {
 		name      string
 		args      args
@@ -112,6 +115,7 @@ func TestSort(t *testing.T) {
 		f       []File
 		special map[string]int
 	}
+
 	tests := []struct {
 		name string
 		args args
@@ -161,6 +165,7 @@ func TestSort(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equal(t, tt.want, Sort(tt.args.f, tt.args.special))
