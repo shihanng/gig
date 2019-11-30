@@ -1,10 +1,66 @@
 package file
 
 import (
+	"bytes"
+	"flag"
+	"io/ioutil"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+var update = flag.Bool("update", false, "update .golden files")
+
+func TestCompose(t *testing.T) {
+	type args struct {
+		files []File
+	}
+	tests := []struct {
+		name      string
+		args      args
+		wantW     string
+		assertion assert.ErrorAssertionFunc
+	}{
+		{
+			name: "single file",
+			args: args{
+				files: []File{{Name: "Go", Typ: ".gitignore"}},
+			},
+			wantW:     "Go.gitignore.golden",
+			assertion: assert.NoError,
+		},
+		{
+			name: "two files",
+			args: args{
+				files: []File{
+					{Name: "Go", Typ: ".gitignore"},
+					{Name: "C", Typ: ".gitignore"},
+				},
+			},
+			wantW:     "GoC.gitignore.golden",
+			assertion: assert.NoError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := &bytes.Buffer{}
+			tt.assertion(t, Compose(w, `testdata`, tt.args.files...))
+
+			goldenPath := filepath.Join(`testdata`, tt.wantW)
+
+			if *update {
+				require.NoError(t, ioutil.WriteFile(goldenPath, w.Bytes(), 0644))
+			}
+
+			expected, err := ioutil.ReadFile(goldenPath)
+			require.NoError(t, err)
+			assert.Equal(t, expected, w.Bytes())
+		})
+	}
+}
 
 func TestSort(t *testing.T) {
 	type args struct {

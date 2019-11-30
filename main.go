@@ -1,9 +1,6 @@
 package main
 
 import (
-	"bufio"
-	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -61,39 +58,7 @@ func main() {
 
 	giFiles = file.Sort(giFiles, orders)
 
-	if err := readFile(os.Stdout, path, giFiles...); err != nil {
+	if err := file.Compose(os.Stdout, filepath.Join(path, `templates`), giFiles...); err != nil {
 		log.Fatal(err)
 	}
-}
-
-func readFile(w io.Writer, repoPath string, files ...file.File) error {
-	for _, file := range files {
-		err := func(name, ext string) error {
-			file, err := os.Open(filepath.Join(repoPath, `templates`, name+ext))
-			if err != nil {
-				return fmt.Errorf("read file: %v", err)
-			}
-			defer file.Close()
-
-			scanner := bufio.NewScanner(file)
-
-			for scanner.Scan() {
-				if _, err := io.WriteString(w, scanner.Text()+"\n"); err != nil {
-					return fmt.Errorf("read file: %v", err)
-				}
-			}
-
-			if err := scanner.Err(); err != nil {
-				return fmt.Errorf("read file: %v", err)
-			}
-
-			return nil
-		}(file.Name, file.Typ)
-
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }

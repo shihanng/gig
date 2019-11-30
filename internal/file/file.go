@@ -1,13 +1,52 @@
 package file
 
 import (
+	"bufio"
+	"io"
+	"os"
+	"path/filepath"
 	"sort"
 	"strings"
+
+	"github.com/cockroachdb/errors"
 )
 
 type File struct {
 	Name string
 	Typ  string
+}
+
+// Compose takes the contents of File from the given directory and join them together.
+func Compose(w io.Writer, directory string, files ...File) error {
+	for _, file := range files {
+		err := func(name, ext string) error {
+			file, err := os.Open(filepath.Join(directory, name+ext))
+			if err != nil {
+				return errors.Wrap(err, "file: open file")
+			}
+			defer file.Close()
+
+			scanner := bufio.NewScanner(file)
+
+			for scanner.Scan() {
+				if _, err := io.WriteString(w, scanner.Text()+"\n"); err != nil {
+					return errors.Wrap(err, "file: writing")
+				}
+			}
+
+			if err := scanner.Err(); err != nil {
+				return errors.Wrap(err, "file: scanning")
+			}
+
+			return nil
+		}(file.Name, file.Typ)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func Sort(f []File, special map[string]int) []File {
