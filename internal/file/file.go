@@ -86,10 +86,8 @@ func header(name, typ string) string {
 	switch Canon(typ) {
 	case ".patch":
 		typ = "Patch "
-
 	case ".stack":
 		typ = "Stack "
-
 	default:
 		typ = ""
 	}

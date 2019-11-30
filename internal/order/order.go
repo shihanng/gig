@@ -26,6 +26,7 @@ func ReadOrder(path string) (map[string]int, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "order: open file")
 	}
+
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
