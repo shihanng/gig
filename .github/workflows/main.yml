@@ -14,3 +14,9 @@ jobs:
 
       - name: Run tests
         run: go test -v ./...
+
+  lints:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up golangci-lint
+        uses: "actions-contrib/golangci-lint@master"
