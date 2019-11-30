@@ -2,6 +2,7 @@ package file
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -41,13 +42,22 @@ func Filter(directory string, filter map[string]bool) ([]File, error) {
 
 // Compose takes the contents of File from the given directory and join them together.
 func Compose(w io.Writer, directory string, files ...File) error {
-	for _, file := range files {
+	for i, file := range files {
 		err := func(name, ext string) error {
 			file, err := os.Open(filepath.Join(directory, name+ext))
 			if err != nil {
 				return errors.Wrap(err, "file: open file")
 			}
 			defer file.Close()
+
+			h := header(name, ext)
+			if i > 0 {
+				h = "\n" + h
+			}
+
+			if _, err := io.WriteString(w, h); err != nil {
+				return errors.Wrap(err, "file: writing")
+			}
 
 			scanner := bufio.NewScanner(file)
 
@@ -70,6 +80,21 @@ func Compose(w io.Writer, directory string, files ...File) error {
 	}
 
 	return nil
+}
+
+func header(name, typ string) string {
+	switch Canon(typ) {
+	case ".patch":
+		typ = "Patch "
+
+	case ".stack":
+		typ = "Stack "
+
+	default:
+		typ = ""
+	}
+
+	return fmt.Sprintf("### %s %s###\n", name, typ)
 }
 
 func Sort(f []File, special map[string]int) []File {
