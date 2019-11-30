@@ -4,8 +4,9 @@ package order
 
 import (
 	"bufio"
-	"fmt"
 	"os"
+
+	"github.com/cockroachdb/errors"
 )
 
 // ReadOrder parses the order find in the provided path and
@@ -23,7 +24,7 @@ import (
 func ReadOrder(path string) (map[string]int, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, fmt.Errorf("order: %v", err)
+		return nil, errors.Wrap(err, "order: open file")
 	}
 	defer file.Close()
 
@@ -40,7 +41,7 @@ func ReadOrder(path string) (map[string]int, error) {
 	}
 
 	if err := scanner.Err(); err != nil {
-		return nil, fmt.Errorf("order: %v", err)
+		return nil, errors.Wrap(err, "order: scanning")
 	}
 
 	return orders, nil
