@@ -20,3 +20,5 @@ jobs:
     steps:
       - name: Set up golangci-lint
         uses: "actions-contrib/golangci-lint@master"
+        with:
+          args: "run"
