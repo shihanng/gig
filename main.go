@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -19,7 +20,7 @@ func main() {
 	_, err := git.PlainClone(path, false, &git.CloneOptions{
 		URL:      sourceRepo,
 		Depth:    1,
-		Progress: os.Stdout,
+		Progress: ioutil.Discard,
 	})
 	if err != nil && err != git.ErrRepositoryAlreadyExists {
 		log.Fatal(err)
