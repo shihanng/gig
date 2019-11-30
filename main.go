@@ -1,11 +1,9 @@
 package main
 
 import (
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/OpenPeeDeeP/xdg"
 	"github.com/shihanng/gi/internal/file"
@@ -34,21 +32,9 @@ func main() {
 		languages[file.Canon(arg)] = true
 	}
 
-	files, err := ioutil.ReadDir(filepath.Join(path, `templates`))
+	files, err := file.Filter(filepath.Join(path, `templates`), languages)
 	if err != nil {
 		log.Fatal(err)
-	}
-
-	giFiles := []file.File{}
-
-	for _, f := range files {
-		filename := f.Name()
-		ext := filepath.Ext(filename)
-		base := strings.TrimSuffix(filename, ext)
-
-		if languages[file.Canon(base)] {
-			giFiles = append(giFiles, file.File{Name: base, Typ: ext})
-		}
 	}
 
 	orders, err := order.ReadOrder(filepath.Join(path, `templates`, `order`))
@@ -56,9 +42,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	giFiles = file.Sort(giFiles, orders)
+	files = file.Sort(files, orders)
 
-	if err := file.Compose(os.Stdout, filepath.Join(path, `templates`), giFiles...); err != nil {
+	if err := file.Compose(os.Stdout, filepath.Join(path, `templates`), files...); err != nil {
 		log.Fatal(err)
 	}
 }

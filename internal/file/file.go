@@ -3,6 +3,7 @@ package file
 import (
 	"bufio"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -14,6 +15,28 @@ import (
 type File struct {
 	Name string
 	Typ  string
+}
+
+// Filter retrieves File from directory based on the content of the given filter.
+func Filter(directory string, filter map[string]bool) ([]File, error) {
+	files := []File{}
+
+	fList, err := ioutil.ReadDir(directory)
+	if err != nil {
+		return files, errors.Wrap(err, "file: read directory")
+	}
+
+	for _, f := range fList {
+		filename := f.Name()
+		ext := filepath.Ext(filename)
+		base := strings.TrimSuffix(filename, ext)
+
+		if filter[Canon(base)] {
+			files = append(files, File{Name: base, Typ: ext})
+		}
+	}
+
+	return files, nil
 }
 
 // Compose takes the contents of File from the given directory and join them together.
