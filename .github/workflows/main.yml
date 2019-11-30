@@ -1,8 +1,7 @@
-name: Go
+name: Main
 on: [pull_request]
 jobs:
-  test:
-    name: test
+  tests:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Go 1.13
