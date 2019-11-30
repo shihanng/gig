@@ -49,13 +49,30 @@ func TestFilter(t *testing.T) {
 			want:      []File{},
 			assertion: assert.Error,
 		},
+		{
+			name: "non matching filter",
+			args: args{
+				directory: `testdata`,
+				filter: map[string]bool{
+					"go":   true,
+					"cpp":  true,
+					"go++": true,
+				},
+			},
+			want: []File{
+				{Name: "Go", Typ: ".gitignore"},
+				{Name: "cpp", Typ: ""},
+				{Name: "go++", Typ: ""},
+			},
+			assertion: assert.Error,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := Filter(tt.args.directory, tt.args.filter)
 			tt.assertion(t, err)
-			assert.Equal(t, tt.want, got)
+			assert.ElementsMatch(t, tt.want, got)
 		})
 	}
 }
@@ -88,6 +105,18 @@ func TestCompose(t *testing.T) {
 				},
 			},
 			wantW:     "GoC.gitignore.golden",
+			assertion: assert.NoError,
+		},
+		{
+			name: "three files (including one unknown)",
+			args: args{
+				files: []File{
+					{Name: "Go", Typ: ".gitignore"},
+					{Name: "Go++", Typ: ""},
+					{Name: "C", Typ: ".gitignore"},
+				},
+			},
+			wantW:     "GoGo++C.gitignore.golden",
 			assertion: assert.NoError,
 		},
 	}

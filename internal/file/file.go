@@ -32,9 +32,23 @@ func Filter(directory string, filter map[string]bool) ([]File, error) {
 		ext := filepath.Ext(filename)
 		base := strings.TrimSuffix(filename, ext)
 
-		if filter[Canon(base)] {
+		if _, ok := filter[Canon(base)]; ok {
 			files = append(files, File{Name: base, Typ: ext})
+			filter[Canon(base)] = false
 		}
+	}
+
+	undefineds := []string{}
+
+	for k, v := range filter {
+		if v {
+			files = append(files, File{Name: k, Typ: ""})
+			undefineds = append(undefineds, k)
+		}
+	}
+
+	if len(undefineds) > 0 {
+		return files, errors.Errorf("file: undefined template(s): %v", undefineds)
 	}
 
 	return files, nil
@@ -44,19 +58,29 @@ func Filter(directory string, filter map[string]bool) ([]File, error) {
 func Compose(w io.Writer, directory string, files ...File) error {
 	for i, file := range files {
 		err := func(name, ext string) error {
-			file, err := os.Open(filepath.Join(directory, name+ext))
-			if err != nil {
-				return errors.Wrap(err, "file: open file")
+			var h string
+
+			file, openErr := os.Open(filepath.Join(directory, name+ext))
+			switch {
+			case openErr == nil:
+				h = header(name, ext)
+			case os.IsNotExist(openErr):
+				h = fmt.Sprintf("#!! ERROR: %s is undefined !!#\n", name)
+			default:
+				return errors.Wrap(openErr, "file: open file")
 			}
 			defer file.Close()
 
-			h := header(name, ext)
 			if i > 0 {
 				h = "\n" + h
 			}
 
 			if _, err := io.WriteString(w, h); err != nil {
 				return errors.Wrap(err, "file: writing")
+			}
+
+			if openErr != nil {
+				return nil
 			}
 
 			scanner := bufio.NewScanner(file)
