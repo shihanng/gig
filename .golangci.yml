@@ -13,3 +13,9 @@ issues:
       linters:
         - gochecknoglobals
       text: "`update` is a global variable"
+
+    # Usually we have table driven tests which make the test function too long.
+    - path: _test\.go
+      linters:
+        - funlen
+      text: Function '.+' is too long
