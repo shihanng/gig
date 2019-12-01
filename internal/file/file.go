@@ -89,7 +89,7 @@ func Compose(w io.Writer, directory string, files ...File) error {
 
 			for scanner.Scan() {
 				content := scanner.Text()
-				if content != "" && dups[content] {
+				if content != "" && content[0] != '#' && dups[content] {
 					continue
 				}
 
