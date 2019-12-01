@@ -27,7 +27,7 @@ import (
 	"path/filepath"
 
 	"github.com/OpenPeeDeeP/xdg"
-	"github.com/pkg/errors"
+	"github.com/cockroachdb/errors"
 	"github.com/shihanng/gi/internal/file"
 	"github.com/shihanng/gi/internal/order"
 	"github.com/spf13/cobra"
@@ -53,7 +53,7 @@ This means that internet connection is not required after the first successful r
 			Progress: ioutil.Discard,
 		})
 		if err != nil && err != git.ErrRepositoryAlreadyExists {
-			return errors.Errorf("gen: git clone", err)
+			return errors.Wrap(err, "gen: git clone")
 		}
 
 		languages := make(map[string]bool, len(args))
