@@ -182,6 +182,14 @@ func (s *Sorter) lessSpecial(i, j int) bool {
 
 func (s *Sorter) lessName(i, j int) bool {
 	in, jn := Canon(s.Files[i].Name), Canon(s.Files[j].Name)
+
+	_, iOK := s.Special[in]
+	_, jOK := s.Special[jn]
+
+	if iOK && jOK {
+		return false
+	}
+
 	return in < jn
 }
 
@@ -190,6 +198,11 @@ func (s *Sorter) lessType(i, j int) bool {
 		`.gitignore`: 0,
 		`.patch`:     1,
 		`.stack`:     2,
+	}
+
+	in, jn := Canon(s.Files[i].Name), Canon(s.Files[j].Name)
+	if in != jn {
+		return false
 	}
 
 	it, jt := Canon(s.Files[i].Typ), Canon(s.Files[j].Typ)
