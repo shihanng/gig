@@ -56,6 +56,8 @@ func Filter(directory string, filter map[string]bool) ([]File, error) {
 
 // Compose takes the contents of File from the given directory and join them together.
 func Compose(w io.Writer, directory string, files ...File) error {
+	dups := map[string]bool{}
+
 	for i, file := range files {
 		err := func(name, ext string) error {
 			var h string
@@ -86,9 +88,15 @@ func Compose(w io.Writer, directory string, files ...File) error {
 			scanner := bufio.NewScanner(file)
 
 			for scanner.Scan() {
-				if _, err := io.WriteString(w, scanner.Text()+"\n"); err != nil {
+				content := scanner.Text()
+				if content != "" && dups[content] {
+					continue
+				}
+
+				if _, err := io.WriteString(w, content+"\n"); err != nil {
 					return errors.Wrap(err, "file: writing")
 				}
+				dups[content] = true
 			}
 
 			if err := scanner.Err(); err != nil {
