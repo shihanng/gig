@@ -1,51 +1,28 @@
+/*
+Copyright © 2019 Shi Han NG <shihanng@gmail.com>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
 package main
 
-import (
-	"io/ioutil"
-	"log"
-	"os"
-	"path/filepath"
-
-	"github.com/OpenPeeDeeP/xdg"
-	"github.com/shihanng/gi/internal/file"
-	"github.com/shihanng/gi/internal/order"
-	"gopkg.in/src-d/go-git.v4"
-)
-
-const sourceRepo = `https://github.com/toptal/gitignore.git`
+import "github.com/shihanng/gi/cmd"
 
 func main() {
-	path := filepath.Join(xdg.CacheHome(), `gi`)
-
-	_, err := git.PlainClone(path, false, &git.CloneOptions{
-		URL:      sourceRepo,
-		Depth:    1,
-		Progress: ioutil.Discard,
-	})
-	if err != nil && err != git.ErrRepositoryAlreadyExists {
-		log.Fatal(err)
-	}
-
-	args := os.Args[1:]
-	languages := make(map[string]bool, len(args))
-
-	for _, arg := range args {
-		languages[file.Canon(arg)] = true
-	}
-
-	files, err := file.Filter(filepath.Join(path, `templates`), languages)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	orders, err := order.ReadOrder(filepath.Join(path, `templates`, `order`))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	files = file.Sort(files, orders)
-
-	if err := file.Compose(os.Stdout, filepath.Join(path, `templates`), files...); err != nil {
-		log.Fatal(err)
-	}
+	cmd.Execute()
 }
