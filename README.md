@@ -1,4 +1,4 @@
-# gi
+# gi [![](https://github.com/shihanng/gi/workflows/Main/badge.svg?branch=develop)](https://github.com/shihanng/gi/actions?query=workflow%3AMain)
 
 `gi` is a command line tool to help you create useful `.gitignore` files for your project.
 It is inspired by [gitignore.io](https://www.gitignore.io/) and make use of
