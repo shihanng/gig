@@ -24,5 +24,5 @@ package main
 import "github.com/shihanng/gi/cmd"
 
 func main() {
-  cmd.Execute()
+	cmd.Execute()
 }
