@@ -119,18 +119,54 @@ func header(name, typ string) string {
 	return fmt.Sprintf("### %s %s###\n", name, typ)
 }
 
-func Sort(f []File, special map[string]int) []File {
-	s := sorter{
-		files: f,
+func Sort(files []File, special map[string]int) []File {
+	specials := make([]File, 0, len(files))
+	normals := make([]File, 0, len(files))
+
+	for _, f := range files {
+		if _, ok := special[Canon(f.Name)]; ok {
+			specials = append(specials, f)
+		} else {
+			normals = append(normals, f)
+		}
+	}
+
+	var specialFiles []File
+
+	if len(specials) > 0 {
+		specialSorter := sorter{
+			files: specials,
+			less: []lessFunc{
+				lessSpecial(special),
+				lessType,
+			},
+		}
+		sort.Sort(&specialSorter)
+
+		normals = append(normals, specialSorter.files[0])
+
+		n := 1
+		for ; n < len(specialSorter.files); n++ {
+			if Canon(specialSorter.files[n].Name) != Canon(specialSorter.files[n-1].Name) {
+				break
+			}
+
+			normals = append(normals, specialSorter.files[n])
+		}
+
+		specialFiles = specialSorter.files[n:]
+	}
+
+	normalSorter := sorter{
+		files: normals,
 		less: []lessFunc{
-			lessSpecial(special),
 			lessName(special),
 			lessType,
 		},
 	}
-	sort.Sort(&s)
+	sort.Sort(&normalSorter)
 
-	return s.files
+	return append(normalSorter.files, specialFiles...)
 }
 
 func Canon(v string) string {
@@ -158,6 +194,7 @@ func (s *sorter) Less(i, j int) bool {
 	var k int
 	for k = 0; k < len(s.less)-1; k++ {
 		less := s.less[k]
+
 		switch {
 		case less(p, q):
 			return true
