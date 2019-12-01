@@ -119,80 +119,139 @@ func header(name, typ string) string {
 	return fmt.Sprintf("### %s %s###\n", name, typ)
 }
 
-func Sort(f []File, special map[string]int) []File {
-	s := Sorter{
-		Files:   f,
-		Special: special,
-	}
-	sort.Sort(&s)
+func Sort(files []File, special map[string]int) []File {
+	specials := make([]File, 0, len(files))
+	normals := make([]File, 0, len(files))
 
-	return s.Files
+	for _, f := range files {
+		if _, ok := special[Canon(f.Name)]; ok {
+			specials = append(specials, f)
+		} else {
+			normals = append(normals, f)
+		}
+	}
+
+	var specialFiles []File
+
+	if len(specials) > 0 {
+		specialSorter := sorter{
+			files: specials,
+			less: []lessFunc{
+				lessSpecial(special),
+				lessType,
+			},
+		}
+		sort.Sort(&specialSorter)
+
+		normals = append(normals, specialSorter.files[0])
+
+		n := 1
+		for ; n < len(specialSorter.files); n++ {
+			if Canon(specialSorter.files[n].Name) != Canon(specialSorter.files[n-1].Name) {
+				break
+			}
+
+			normals = append(normals, specialSorter.files[n])
+		}
+
+		specialFiles = specialSorter.files[n:]
+	}
+
+	normalSorter := sorter{
+		files: normals,
+		less: []lessFunc{
+			lessName(special),
+			lessType,
+		},
+	}
+	sort.Sort(&normalSorter)
+
+	return append(normalSorter.files, specialFiles...)
 }
 
 func Canon(v string) string {
 	return strings.ToLower(v)
 }
 
-type Sorter struct {
-	Files   []File
-	Special map[string]int
+type lessFunc func(f, g File) bool
+
+type sorter struct {
+	files []File
+	less  []lessFunc
 }
 
-func (s *Sorter) Len() int {
-	return len(s.Files)
+func (s *sorter) Len() int {
+	return len(s.files)
 }
 
-func (s *Sorter) Swap(i, j int) {
-	s.Files[i], s.Files[j] = s.Files[j], s.Files[i]
+func (s *sorter) Swap(i, j int) {
+	s.files[i], s.files[j] = s.files[j], s.files[i]
 }
 
-func (s *Sorter) Less(i, j int) bool {
-	for _, lessFn := range []func(int, int) bool{
-		s.lessSpecial,
-		s.lessName,
-	} {
-		less := lessFn
+func (s *sorter) Less(i, j int) bool {
+	p, q := s.files[i], s.files[j]
+
+	var k int
+	for k = 0; k < len(s.less)-1; k++ {
+		less := s.less[k]
 
 		switch {
-		case less(i, j):
+		case less(p, q):
 			return true
-		case less(j, i):
+		case less(q, p):
 			return false
 		}
 	}
 
-	return s.lessType(i, j)
+	return s.less[k](p, q)
 }
 
-func (s *Sorter) lessSpecial(i, j int) bool {
-	in, jn := Canon(s.Files[i].Name), Canon(s.Files[j].Name)
+func lessSpecial(special map[string]int) func(File, File) bool {
+	return func(i, j File) bool {
+		in, jn := Canon(i.Name), Canon(j.Name)
 
-	io, ok := s.Special[in]
-	if !ok {
-		return false
+		io, ok := special[in]
+		if !ok {
+			return false
+		}
+
+		jo, ok := special[jn]
+		if !ok {
+			return false
+		}
+
+		return io < jo
 	}
+}
 
-	jo, ok := s.Special[jn]
-	if !ok {
-		return false
+func lessName(special map[string]int) func(File, File) bool {
+	return func(i, j File) bool {
+		in, jn := Canon(i.Name), Canon(j.Name)
+
+		_, iOK := special[in]
+		_, jOK := special[jn]
+
+		if iOK && jOK {
+			return false
+		}
+
+		return in < jn
 	}
-
-	return io < jo
 }
 
-func (s *Sorter) lessName(i, j int) bool {
-	in, jn := Canon(s.Files[i].Name), Canon(s.Files[j].Name)
-	return in < jn
-}
-
-func (s *Sorter) lessType(i, j int) bool {
+func lessType(i, j File) bool {
 	typOrder := map[string]int{
 		`.gitignore`: 0,
 		`.patch`:     1,
 		`.stack`:     2,
 	}
 
-	it, jt := Canon(s.Files[i].Typ), Canon(s.Files[j].Typ)
+	in, jn := Canon(i.Name), Canon(j.Name)
+	if in != jn {
+		return false
+	}
+
+	it, jt := Canon(i.Typ), Canon(j.Typ)
 
 	io, ok := typOrder[it]
 	if !ok {

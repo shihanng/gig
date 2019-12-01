@@ -181,6 +181,42 @@ func TestSort(t *testing.T) {
 			},
 		},
 		{
+			name: "complicated special",
+			args: args{
+				f: []File{
+					{Name: "Ada", Typ: ".gitignore"},
+					{Name: "AndroidStudio", Typ: ".gitignore"},
+					{Name: "AndroidStudio", Typ: ".patch"},
+					{Name: "C", Typ: ".gitignore"},
+					{Name: "Go", Typ: ".gitignore"},
+					{Name: "Go", Typ: ".patch"},
+					{Name: "Gradle", Typ: ".gitignore"},
+					{Name: "Gradle", Typ: ".patch"},
+					{Name: "Java", Typ: ".gitignore"},
+					{Name: "Zsh", Typ: ".gitignore"},
+				},
+				special: map[string]int{
+					"androidstudio": 2,
+					"gradle":        1,
+					"java":          0,
+					"umbraco":       4,
+					"visualstudio":  3,
+				},
+			},
+			want: []File{
+				{Name: "Ada", Typ: ".gitignore"},
+				{Name: "C", Typ: ".gitignore"},
+				{Name: "Go", Typ: ".gitignore"},
+				{Name: "Go", Typ: ".patch"},
+				{Name: "Java", Typ: ".gitignore"},
+				{Name: "Zsh", Typ: ".gitignore"},
+				{Name: "Gradle", Typ: ".gitignore"},
+				{Name: "Gradle", Typ: ".patch"},
+				{Name: "AndroidStudio", Typ: ".gitignore"},
+				{Name: "AndroidStudio", Typ: ".patch"},
+			},
+		},
+		{
 			name: "type",
 			args: args{
 				f: []File{
