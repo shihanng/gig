@@ -22,3 +22,7 @@
 ### Go Patch ###
 /vendor/
 /Godeps/
+
+### gi ###
+bin/**
+dist/**
