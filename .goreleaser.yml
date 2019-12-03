@@ -16,7 +16,6 @@ archives:
       linux: Linux
       windows: Windows
       amd64: x86_64
-    format: binary
 
 checksum:
   name_template: "checksums.txt"
