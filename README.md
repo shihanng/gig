@@ -7,6 +7,14 @@ This also means that `gi` supports the are four file types that gitignore.io rec
 
 # Install
 
+## Binaries
+
+The [release page contains](https://github.com/shihanng/gi/releases) binaries built
+for various platforms. Download then extract the binary with `tar -xf`.
+Place the binary in the `$PATH` e.g. `/usr/local/bin`.
+
+## With `go get`
+
 ```
 go get github.com/shihanng/gi
 ```
