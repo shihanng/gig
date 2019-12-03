@@ -1,4 +1,4 @@
-# gi [![](https://github.com/shihanng/gi/workflows/Main/badge.svg?branch=develop)](https://github.com/shihanng/gi/actions?query=workflow%3AMain)
+# gi [![](https://github.com/shihanng/gi/workflows/main/badge.svg?branch=develop)](https://github.com/shihanng/gi/actions?query=workflow%3Amain) [![](https://github.com/shihanng/gi/workflows/release/badge.svg?branch=develop)](https://github.com/shihanng/gi/actions?query=workflow%3Arelease) [![GitHub](https://img.shields.io/github/license/shihanng/gi)](https://github.com/shihanng/gi/blob/develop/LICENSE) [![GitHub release (latest by date)](https://img.shields.io/github/v/release/shihanng/gi)](https://github.com/shihanng/gi/releases)
 
 `gi` is a command line tool to help you create useful `.gitignore` files for your project.
 It is inspired by [gitignore.io](https://www.gitignore.io/) and make use of
@@ -6,6 +6,14 @@ the large collection of useful [`.gitignore` templates](https://github.com/topta
 This also means that `gi` supports the are four file types that gitignore.io recognizes.
 
 # Install
+
+## Binaries
+
+The [release page contains](https://github.com/shihanng/gi/releases) binaries built
+for various platforms. Download then extract the binary with `tar -xf`.
+Place the binary in the `$PATH` e.g. `/usr/local/bin`.
+
+## With `go get`
 
 ```
 go get github.com/shihanng/gi
