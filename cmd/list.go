@@ -22,57 +22,30 @@ THE SOFTWARE.
 package cmd
 
 import (
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 
 	"github.com/cockroachdb/errors"
 	"github.com/shihanng/gi/internal/file"
-	"github.com/shihanng/gi/internal/order"
 	"github.com/spf13/cobra"
-	"gopkg.in/src-d/go-git.v4"
 )
 
-const sourceRepo = `https://github.com/toptal/gitignore.git`
-
-// genCmd represents the gen command
-var genCmd = &cobra.Command{
-	Use:   "gen [template name]",
-	Short: "Generates .gitignore of the given inputs",
-	Long: `At the very first run the program will clone the templates
-repository https://github.com/toptal/gitignore.git into $XDG_CACHE_HOME/gi.
-This means that internet connection is not required after the first successful run.`,
-	Args: cobra.MinimumNArgs(1),
+// listCmd represents the list command
+var listCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List all supported templates",
+	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		_, err := git.PlainClone(templatePath, false, &git.CloneOptions{
-			URL:      sourceRepo,
-			Depth:    1,
-			Progress: ioutil.Discard,
-		})
-		if err != nil && err != git.ErrRepositoryAlreadyExists {
-			return errors.Wrap(err, "gen: git clone")
-		}
-
-		languages := make(map[string]bool, len(args))
-
-		for _, arg := range args {
-			languages[file.Canon(arg)] = true
-		}
-
-		files, err := file.Filter(filepath.Join(templatePath, `templates`), languages)
+		templates, err := file.List(filepath.Join(templatePath, `templates`))
 		if err != nil {
 			return err
 		}
 
-		orders, err := order.ReadOrder(filepath.Join(templatePath, `templates`, `order`))
-		if err != nil {
-			return err
-		}
-
-		files = file.Sort(files, orders)
-
-		if err := file.Compose(os.Stdout, filepath.Join(templatePath, `templates`), files...); err != nil {
-			return err
+		for _, t := range templates {
+			if _, err := io.WriteString(os.Stdout, t+"\n"); err != nil {
+				return errors.Wrap(err, "cmd/list: outputing")
+			}
 		}
 
 		return nil
@@ -80,5 +53,5 @@ This means that internet connection is not required after the first successful r
 }
 
 func init() {
-	rootCmd.AddCommand(genCmd)
+	rootCmd.AddCommand(listCmd)
 }
