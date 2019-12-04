@@ -24,7 +24,9 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
+	"github.com/OpenPeeDeeP/xdg"
 	"github.com/spf13/cobra"
 )
 
@@ -34,6 +36,14 @@ var rootCmd = &cobra.Command{
 	Long: `gi is a command line tool to help you create useful .gitignore files
 for your project. It is inspired by gitignore.io and make use of
 the large collection of useful .gitignore templates of the web service.`,
+}
+
+var templatePath string
+
+func init() {
+	cobra.OnInitialize(func() {
+		templatePath = filepath.Join(xdg.CacheHome(), `gi`)
+	})
 }
 
 func Execute() {

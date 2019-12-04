@@ -18,6 +18,27 @@ type File struct {
 	Typ  string
 }
 
+func List(directory string) ([]string, error) {
+	files, err := ioutil.ReadDir(directory)
+	if err != nil {
+		return nil, errors.Wrap(err, "file: read directory for list")
+	}
+
+	var names []string
+
+	for _, f := range files {
+		filename := f.Name()
+		ext := filepath.Ext(filename)
+		base := strings.TrimSuffix(filename, ext)
+
+		if ext == ".gitignore" {
+			names = append(names, base)
+		}
+	}
+
+	return names, nil
+}
+
 // Filter retrieves File from directory based on the content of the given filter.
 func Filter(directory string, filter map[string]bool) ([]File, error) {
 	files := []File{}

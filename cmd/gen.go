@@ -26,7 +26,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/OpenPeeDeeP/xdg"
 	"github.com/cockroachdb/errors"
 	"github.com/shihanng/gi/internal/file"
 	"github.com/shihanng/gi/internal/order"
@@ -45,9 +44,7 @@ repository https://github.com/toptal/gitignore.git into $XDG_CACHE_HOME/gi.
 This means that internet connection is not required after the first successful run.`,
 	Args: cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		path := filepath.Join(xdg.CacheHome(), `gi`)
-
-		_, err := git.PlainClone(path, false, &git.CloneOptions{
+		_, err := git.PlainClone(templatePath, false, &git.CloneOptions{
 			URL:      sourceRepo,
 			Depth:    1,
 			Progress: ioutil.Discard,
@@ -62,19 +59,19 @@ This means that internet connection is not required after the first successful r
 			languages[file.Canon(arg)] = true
 		}
 
-		files, err := file.Filter(filepath.Join(path, `templates`), languages)
+		files, err := file.Filter(filepath.Join(templatePath, `templates`), languages)
 		if err != nil {
 			return err
 		}
 
-		orders, err := order.ReadOrder(filepath.Join(path, `templates`, `order`))
+		orders, err := order.ReadOrder(filepath.Join(templatePath, `templates`, `order`))
 		if err != nil {
 			return err
 		}
 
 		files = file.Sort(files, orders)
 
-		if err := file.Compose(os.Stdout, filepath.Join(path, `templates`), files...); err != nil {
+		if err := file.Compose(os.Stdout, filepath.Join(templatePath, `templates`), files...); err != nil {
 			return err
 		}
 
