@@ -17,6 +17,7 @@ func TestList(t *testing.T) {
 	type args struct {
 		directory string
 	}
+
 	tests := []struct {
 		name      string
 		args      args
@@ -538,6 +539,7 @@ func TestList(t *testing.T) {
 			assertion: assert.NoError,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := List(tt.args.directory)
