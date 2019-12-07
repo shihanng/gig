@@ -35,7 +35,7 @@ func TestList(t *testing.T) {
 		{
 			name: "normal",
 			args: args{
-				directory: "_testdir",
+				directory: "testdata",
 			},
 			want: []string{"1C-Bitrix",
 				"1C",
@@ -571,6 +571,7 @@ func TestFilter(t *testing.T) {
 			},
 			want: []File{
 				{Name: "Go", Typ: ".gitignore"},
+				{Name: "Go", Typ: ".patch"},
 			},
 			assertion: assert.NoError,
 		},
@@ -597,6 +598,7 @@ func TestFilter(t *testing.T) {
 			},
 			want: []File{
 				{Name: "Go", Typ: ".gitignore"},
+				{Name: "Go", Typ: ".patch"},
 				{Name: "cpp", Typ: ""},
 				{Name: "go++", Typ: ""},
 			},
