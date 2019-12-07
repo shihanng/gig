@@ -149,7 +149,7 @@ func header(name, typ string) string {
 	return fmt.Sprintf("### %s %s###\n", name, typ)
 }
 
-func Sort(files []File, special map[string]int) []File {
+func SortFiles(files []File, special map[string]int) []File {
 	specials := make([]File, 0, len(files))
 	normals := make([]File, 0, len(files))
 
@@ -164,7 +164,7 @@ func Sort(files []File, special map[string]int) []File {
 	var specialFiles []File
 
 	if len(specials) > 0 {
-		specialSorter := sorter{
+		specialSorter := fileSorter{
 			files: specials,
 			less: []lessFunc{
 				lessSpecial(special),
@@ -187,7 +187,7 @@ func Sort(files []File, special map[string]int) []File {
 		specialFiles = specialSorter.files[n:]
 	}
 
-	normalSorter := sorter{
+	normalSorter := fileSorter{
 		files: normals,
 		less: []lessFunc{
 			lessName(special),
@@ -205,20 +205,20 @@ func Canon(v string) string {
 
 type lessFunc func(f, g File) bool
 
-type sorter struct {
+type fileSorter struct {
 	files []File
 	less  []lessFunc
 }
 
-func (s *sorter) Len() int {
+func (s *fileSorter) Len() int {
 	return len(s.files)
 }
 
-func (s *sorter) Swap(i, j int) {
+func (s *fileSorter) Swap(i, j int) {
 	s.files[i], s.files[j] = s.files[j], s.files[i]
 }
 
-func (s *sorter) Less(i, j int) bool {
+func (s *fileSorter) Less(i, j int) bool {
 	p, q := s.files[i], s.files[j]
 
 	var k int

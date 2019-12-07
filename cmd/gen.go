@@ -69,7 +69,7 @@ This means that internet connection is not required after the first successful r
 			return err
 		}
 
-		files = file.Sort(files, orders)
+		files = file.SortFiles(files, orders)
 
 		if err := file.Compose(os.Stdout, filepath.Join(templatePath, `templates`), files...); err != nil {
 			return err
