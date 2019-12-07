@@ -549,75 +549,10 @@ func TestList(t *testing.T) {
 	}
 }
 
-func TestFilter(t *testing.T) {
+func TestGenerate(t *testing.T) {
 	type args struct {
 		directory string
-		filter    map[string]bool
-	}
-
-	tests := []struct {
-		name      string
-		args      args
-		want      []File
-		assertion assert.ErrorAssertionFunc
-	}{
-		{
-			name: "normal",
-			args: args{
-				directory: `testdata`,
-				filter: map[string]bool{
-					"go": true,
-				},
-			},
-			want: []File{
-				{Name: "Go", Typ: ".gitignore"},
-				{Name: "Go", Typ: ".patch"},
-			},
-			assertion: assert.NoError,
-		},
-		{
-			name: "not found",
-			args: args{
-				directory: `unknown`,
-				filter: map[string]bool{
-					"go": true,
-				},
-			},
-			want:      []File{},
-			assertion: assert.Error,
-		},
-		{
-			name: "non matching filter",
-			args: args{
-				directory: `testdata`,
-				filter: map[string]bool{
-					"go":   true,
-					"cpp":  true,
-					"go++": true,
-				},
-			},
-			want: []File{
-				{Name: "Go", Typ: ".gitignore"},
-				{Name: "Go", Typ: ".patch"},
-				{Name: "cpp", Typ: ""},
-				{Name: "go++", Typ: ""},
-			},
-			assertion: assert.Error,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := Filter(tt.args.directory, tt.args.filter)
-			tt.assertion(t, err)
-			assert.ElementsMatch(t, tt.want, got)
-		})
-	}
-}
-
-func TestCompose(t *testing.T) {
-	type args struct {
-		files []File
+		items     []string
 	}
 
 	tests := []struct {
@@ -627,42 +562,66 @@ func TestCompose(t *testing.T) {
 		assertion assert.ErrorAssertionFunc
 	}{
 		{
-			name: "single file",
+			name: "only ignore",
 			args: args{
-				files: []File{{Name: "Go", Typ: ".gitignore"}},
+				directory: "testdata",
+				items:     []string{"ELM"},
 			},
-			wantW:     "Go.gitignore.golden",
+			wantW:     "only-ignore.golden",
 			assertion: assert.NoError,
 		},
 		{
-			name: "two files",
+			name: "only ignore (duplicated items)",
 			args: args{
-				files: []File{
-					{Name: "Go", Typ: ".gitignore"},
-					{Name: "C", Typ: ".gitignore"},
-				},
+				directory: "testdata",
+				items:     []string{"ELM", "elm"},
 			},
-			wantW:     "GoC.gitignore.golden",
+			wantW:     "only-ignore.golden",
 			assertion: assert.NoError,
 		},
 		{
-			name: "three files (including one unknown)",
+			name: "with patch",
 			args: args{
-				files: []File{
-					{Name: "Go", Typ: ".gitignore"},
-					{Name: "Go++", Typ: ""},
-					{Name: "C", Typ: ".gitignore"},
-				},
+				directory: "testdata",
+				items:     []string{"go", "elm"},
 			},
-			wantW:     "GoGo++C.gitignore.golden",
+			wantW:     "with-patch.golden",
 			assertion: assert.NoError,
+		},
+		{
+			name: "with stack",
+			args: args{
+				directory: "testdata",
+				items:     []string{"lamP"},
+			},
+			wantW:     "with-stack.golden",
+			assertion: assert.NoError,
+		},
+		{
+			name: "with duplicated lines",
+			args: args{
+				directory: "testdata",
+				items:     []string{"go", "c"},
+			},
+			wantW:     "with-duplicated-lines.golden",
+			assertion: assert.NoError,
+		},
+		{
+			name: "with undefined",
+			args: args{
+				directory: "testdata",
+				items:     []string{"go", "go++"},
+			},
+			wantW:     "with-undefined.golden",
+			assertion: assert.Error,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			w := &bytes.Buffer{}
-			tt.assertion(t, Compose(w, `testdata`, tt.args.files...))
+			err := Generate(w, `testdata`, tt.args.items...)
+			tt.assertion(t, err)
 
 			goldenPath := filepath.Join(`_golden`, tt.wantW)
 
@@ -677,101 +636,7 @@ func TestCompose(t *testing.T) {
 	}
 }
 
-func TestSort(t *testing.T) {
-	type args struct {
-		f       []File
-		special map[string]int
-	}
-
-	tests := []struct {
-		name string
-		args args
-		want []File
-	}{
-		{
-			name: "simple",
-			args: args{
-				f: []File{
-					{Name: "B"},
-					{Name: "A"},
-				},
-			},
-			want: []File{
-				{Name: "A"},
-				{Name: "B"},
-			},
-		},
-		{
-			name: "special",
-			args: args{
-				f: []File{
-					{Name: "B"},
-					{Name: "A"},
-				},
-				special: map[string]int{
-					"a": 2,
-					"b": 1,
-				},
-			},
-			want: []File{
-				{Name: "B"},
-				{Name: "A"},
-			},
-		},
-		{
-			name: "complicated special",
-			args: args{
-				f: []File{
-					{Name: "Ada", Typ: ".gitignore"},
-					{Name: "AndroidStudio", Typ: ".gitignore"},
-					{Name: "AndroidStudio", Typ: ".patch"},
-					{Name: "C", Typ: ".gitignore"},
-					{Name: "Go", Typ: ".gitignore"},
-					{Name: "Go", Typ: ".patch"},
-					{Name: "Gradle", Typ: ".gitignore"},
-					{Name: "Gradle", Typ: ".patch"},
-					{Name: "Java", Typ: ".gitignore"},
-					{Name: "Zsh", Typ: ".gitignore"},
-				},
-				special: map[string]int{
-					"androidstudio": 2,
-					"gradle":        1,
-					"java":          0,
-					"umbraco":       4,
-					"visualstudio":  3,
-				},
-			},
-			want: []File{
-				{Name: "Ada", Typ: ".gitignore"},
-				{Name: "C", Typ: ".gitignore"},
-				{Name: "Go", Typ: ".gitignore"},
-				{Name: "Go", Typ: ".patch"},
-				{Name: "Java", Typ: ".gitignore"},
-				{Name: "Zsh", Typ: ".gitignore"},
-				{Name: "Gradle", Typ: ".gitignore"},
-				{Name: "Gradle", Typ: ".patch"},
-				{Name: "AndroidStudio", Typ: ".gitignore"},
-				{Name: "AndroidStudio", Typ: ".patch"},
-			},
-		},
-		{
-			name: "type",
-			args: args{
-				f: []File{
-					{Name: "A", Typ: ".Patch"},
-					{Name: "A", Typ: ".GitIgnore"},
-				},
-			},
-			want: []File{
-				{Name: "A", Typ: ".GitIgnore"},
-				{Name: "A", Typ: ".Patch"},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.want, Sort(tt.args.f, tt.args.special))
-		})
-	}
+func TestGenerate_UnknownDirectory(t *testing.T) {
+	w := &bytes.Buffer{}
+	assert.Error(t, Generate(w, `unknown`))
 }

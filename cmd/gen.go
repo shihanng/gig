@@ -53,29 +53,16 @@ This means that internet connection is not required after the first successful r
 			return errors.Wrap(err, "gen: git clone")
 		}
 
-		languages := make(map[string]bool, len(args))
-
-		for _, arg := range args {
-			languages[file.Canon(arg)] = true
-		}
-
-		files, err := file.Filter(filepath.Join(templatePath, `templates`), languages)
-		if err != nil {
-			return err
-		}
+		items := args
 
 		orders, err := order.ReadOrder(filepath.Join(templatePath, `templates`, `order`))
 		if err != nil {
 			return err
 		}
 
-		files = file.Sort(files, orders)
+		items = file.Sort(items, orders)
 
-		if err := file.Compose(os.Stdout, filepath.Join(templatePath, `templates`), files...); err != nil {
-			return err
-		}
-
-		return nil
+		return file.Generate(os.Stdout, filepath.Join(templatePath, `templates`), items...)
 	},
 }
 

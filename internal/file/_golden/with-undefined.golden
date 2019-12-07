@@ -19,3 +19,5 @@
 ### Go Patch ###
 /vendor/
 /Godeps/
+
+#!! ERROR: go++ is undefined !!#
