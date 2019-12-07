@@ -11,6 +11,7 @@ func TestSort(t *testing.T) {
 		items        []string
 		specialOrder map[string]int
 	}
+
 	tests := []struct {
 		name string
 		args args
@@ -85,6 +86,7 @@ func TestSort(t *testing.T) {
 			want: []string{"ada", "c", "Django", "go", "zsh", "gradle", "androidstudio"},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equal(t, tt.want, Sort(tt.args.items, tt.args.specialOrder))

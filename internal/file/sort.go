@@ -13,6 +13,7 @@ func Sort(items []string, specialOrder map[string]int) []string {
 		less:  []lessFn{bySpecial(specialOrder), byCanon},
 	}
 	sort.Sort(&s)
+
 	return items
 }
 

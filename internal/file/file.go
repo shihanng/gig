@@ -48,11 +48,14 @@ type IgnoreFile struct {
 func lookup(directory string, items []string) ([]string, map[string]IgnoreFile, error) {
 	ignoreFiles := make(map[string]IgnoreFile)
 	unique := make([]string, 0, len(items))
+
 	for _, item := range items {
 		if _, ok := ignoreFiles[Canon(item)]; ok {
 			continue
 		}
+
 		ignoreFiles[Canon(item)] = IgnoreFile{}
+
 		unique = append(unique, item)
 	}
 
@@ -76,6 +79,7 @@ func lookup(directory string, items []string) ([]string, map[string]IgnoreFile, 
 			case ".stack":
 				ignoreFile.stack = append(ignoreFile.stack, filename)
 			}
+
 			ignoreFiles[Canon(splitted[0])] = ignoreFile
 		}
 	}
@@ -103,7 +107,9 @@ func Generate(w io.Writer, directory string, items ...string) error {
 			if _, err := fmt.Fprintf(w, "\n#!! ERROR: %s is undefined !!#\n", item); err != nil {
 				return errors.Wrap(err, "file: writing")
 			}
+
 			errs = multierror.Append(errs, errors.Errorf("file: %s is undefined", item))
+
 			continue
 		}
 
@@ -133,6 +139,7 @@ func (w *writer) Write(out io.Writer, filenames ...string) error {
 		if filename == "" {
 			continue
 		}
+
 		err := func(filename string) error {
 			ext := filepath.Ext(filename)
 			base := strings.TrimSuffix(filename, ext)

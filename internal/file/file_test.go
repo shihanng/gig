@@ -554,6 +554,7 @@ func TestGenerate(t *testing.T) {
 		directory string
 		items     []string
 	}
+
 	tests := []struct {
 		name      string
 		args      args
@@ -615,6 +616,7 @@ func TestGenerate(t *testing.T) {
 			assertion: assert.Error,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			w := &bytes.Buffer{}

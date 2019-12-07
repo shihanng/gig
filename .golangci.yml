@@ -37,3 +37,9 @@ issues:
       linters:
         - gochecknoglobals
       text: "`templatePath` is a global variable"
+
+    # A long URL
+    - path: internal/file/sort.go
+      linters:
+        - lll
+      text: "line is 146 characters"
