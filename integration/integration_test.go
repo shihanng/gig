@@ -50,7 +50,9 @@ func TestCli(t *testing.T) {
 }
 
 func TestCheckGitIgnoreIO(t *testing.T) {
-	resp, err := http.Get(`https://www.gitignore.io/api/androidstudio,java,go,ada,zsh,c,gradle`)
+	// Testing against "reactnative", "mean" is avoided because the result for stack from
+	// gitignore.io seems not in order.
+	resp, err := http.Get(`https://www.gitignore.io/api/django,androidstudio,java,go,ada,zsh,c,gradle`)
 	require.NoError(t, err)
 	defer resp.Body.Close()
 
@@ -75,7 +77,7 @@ func TestCheckGitIgnoreIO(t *testing.T) {
 	expectedBytes := expected.Bytes()
 	expectedBytes = expectedBytes[:len(expectedBytes)-1]
 
-	actual, err := exec.Command("../gi", "gen", "androidstudio", "java", "go", "ada", "zsh", "c", "gradle", "go").CombinedOutput()
+	actual, err := exec.Command("../gi", "gen", "Django", "androidstudio", "java", "go", "ada", "zsh", "c", "gradle", "go").CombinedOutput()
 	assert.NoError(t, err)
 	assert.Equal(t, expectedBytes, actual)
 }
