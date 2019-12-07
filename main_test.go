@@ -1,6 +1,6 @@
 // +build integration
 
-package integration
+package main
 
 import (
 	"bufio"
@@ -21,13 +21,13 @@ import (
 var update = flag.Bool("update", false, "update .golden files")
 
 func TestMain(m *testing.M) {
-	if err := exec.Command("make", "-C", "../", "build").Run(); err != nil {
+	if err := exec.Command("make", "build").Run(); err != nil {
 		log.Fatalf("Fail to run make: %v", err)
 	}
 
 	code := m.Run()
 
-	if err := exec.Command("make", "-C", "../", "clean").Run(); err != nil {
+	if err := exec.Command("make", "clean").Run(); err != nil {
 		log.Fatalf("Fail to run make: %v", err)
 	}
 
@@ -35,7 +35,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestCli(t *testing.T) {
-	actual, err := exec.Command("../gi", "gen", "go").CombinedOutput()
+	actual, err := exec.Command("./gi", "gen", "go").CombinedOutput()
 	assert.NoError(t, err)
 
 	goldenPath := `./testdata/cli.golden`
@@ -77,7 +77,7 @@ func TestCheckGitIgnoreIO(t *testing.T) {
 	expectedBytes := expected.Bytes()
 	expectedBytes = expectedBytes[:len(expectedBytes)-1]
 
-	actual, err := exec.Command("../gi", "gen", "Django", "androidstudio", "java", "go", "ada", "zsh", "c", "gradle", "go").CombinedOutput()
+	actual, err := exec.Command("./gi", "gen", "Django", "androidstudio", "java", "go", "ada", "zsh", "c", "gradle", "go").CombinedOutput()
 	assert.NoError(t, err)
 	assert.Equal(t, expectedBytes, actual)
 }
