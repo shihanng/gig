@@ -52,8 +52,9 @@ func Filter(directory string, filter map[string]bool) ([]File, error) {
 		filename := f.Name()
 		ext := filepath.Ext(filename)
 		base := strings.TrimSuffix(filename, ext)
+		splitted := strings.Split(base, ".")
 
-		if _, ok := filter[Canon(base)]; ok {
+		if _, ok := filter[Canon(splitted[0])]; ok {
 			files = append(files, File{Name: base, Typ: ext})
 			filter[Canon(base)] = false
 		}

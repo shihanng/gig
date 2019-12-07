@@ -662,7 +662,7 @@ func TestCompose(t *testing.T) {
 			w := &bytes.Buffer{}
 			tt.assertion(t, Compose(w, `testdata`, tt.args.files...))
 
-			goldenPath := filepath.Join(`testdata`, tt.wantW)
+			goldenPath := filepath.Join(`_golden`, tt.wantW)
 
 			if *update {
 				require.NoError(t, ioutil.WriteFile(goldenPath, w.Bytes(), 0644))
