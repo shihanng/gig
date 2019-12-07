@@ -60,7 +60,7 @@ func TestCheckGitIgnoreIO(t *testing.T) {
 	scanner := bufio.NewScanner(resp.Body)
 
 	for i := 0; scanner.Scan(); i++ {
-		if i < 4 {
+		if i < 3 {
 			continue
 		}
 
@@ -79,5 +79,5 @@ func TestCheckGitIgnoreIO(t *testing.T) {
 
 	actual, err := exec.Command("./gi", "gen", "Django", "androidstudio", "java", "go", "ada", "zsh", "c", "gradle", "go").CombinedOutput()
 	assert.NoError(t, err)
-	assert.Equal(t, expectedBytes, actual)
+	assert.Equal(t, string(expectedBytes), string(actual))
 }

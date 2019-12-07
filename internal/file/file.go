@@ -7,10 +7,10 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 
 	"github.com/cockroachdb/errors"
+	"github.com/hashicorp/go-multierror"
 )
 
 type File struct {
@@ -39,86 +39,126 @@ func List(directory string) ([]string, error) {
 	return names, nil
 }
 
-// Filter retrieves File from directory based on the content of the given filter.
-func Filter(directory string, filter map[string]bool) ([]File, error) {
-	files := []File{}
+type IgnoreFile struct {
+	gitignore string
+	patch     string
+	stack     []string
+}
 
-	fList, err := ioutil.ReadDir(directory)
-	if err != nil {
-		return files, errors.Wrap(err, "file: read directory")
+func lookup(directory string, items []string) ([]string, map[string]IgnoreFile, error) {
+	ignoreFiles := make(map[string]IgnoreFile)
+	unique := make([]string, 0, len(items))
+	for _, item := range items {
+		if _, ok := ignoreFiles[Canon(item)]; ok {
+			continue
+		}
+		ignoreFiles[Canon(item)] = IgnoreFile{}
+		unique = append(unique, item)
 	}
 
-	for _, f := range fList {
+	files, err := ioutil.ReadDir(directory)
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "file: read directory")
+	}
+
+	for _, f := range files {
 		filename := f.Name()
 		ext := filepath.Ext(filename)
 		base := strings.TrimSuffix(filename, ext)
 		splitted := strings.Split(base, ".")
 
-		if _, ok := filter[Canon(splitted[0])]; ok {
-			files = append(files, File{Name: base, Typ: ext})
-			filter[Canon(base)] = false
+		if ignoreFile, ok := ignoreFiles[Canon(splitted[0])]; ok {
+			switch Canon(ext) {
+			case ".gitignore":
+				ignoreFile.gitignore = filename
+			case ".patch":
+				ignoreFile.patch = filename
+			case ".stack":
+				ignoreFile.stack = append(ignoreFile.stack, filename)
+			}
+			ignoreFiles[Canon(splitted[0])] = ignoreFile
 		}
 	}
 
-	undefineds := []string{}
-
-	for k, v := range filter {
-		if v {
-			files = append(files, File{Name: k, Typ: ""})
-			undefineds = append(undefineds, k)
-		}
-	}
-
-	if len(undefineds) > 0 {
-		return files, errors.Errorf("file: undefined template(s): %v", undefineds)
-	}
-
-	return files, nil
+	return unique, ignoreFiles, nil
 }
 
-// Compose takes the contents of File from the given directory and join them together.
-func Compose(w io.Writer, directory string, files ...File) error {
-	dups := map[string]bool{}
+func Generate(w io.Writer, directory string, items ...string) error {
+	uniqueItems, ignoreFiles, err := lookup(directory, items)
+	if err != nil {
+		return err
+	}
 
-	for i, file := range files {
-		err := func(name, ext string) error {
-			var h string
+	writer := writer{
+		directory:  directory,
+		duplicates: make(map[string]bool),
+	}
 
-			file, openErr := os.Open(filepath.Join(directory, name+ext))
-			switch {
-			case openErr == nil:
-				h = header(name, ext)
-			case os.IsNotExist(openErr):
-				h = fmt.Sprintf("#!! ERROR: %s is undefined !!#\n", name)
-			default:
-				return errors.Wrap(openErr, "file: open file")
-			}
-			defer file.Close()
+	var errs *multierror.Error
 
-			if i > 0 {
-				h = "\n" + h
-			}
+	for _, item := range uniqueItems {
+		ignoreFile := ignoreFiles[Canon(item)]
 
-			if _, err := io.WriteString(w, h); err != nil {
+		if ignoreFile.gitignore == "" {
+			if _, err := fmt.Fprintf(w, "\n#!! ERROR: %s is undefined !!#\n", item); err != nil {
 				return errors.Wrap(err, "file: writing")
 			}
+			errs = multierror.Append(errs, errors.Errorf("file: %s is undefined", item))
+			continue
+		}
 
-			if openErr != nil {
-				return nil
+		if err := writer.Write(w, ignoreFile.gitignore); err != nil {
+			return err
+		}
+
+		if err := writer.Write(w, ignoreFile.patch); err != nil {
+			return err
+		}
+
+		if err := writer.Write(w, ignoreFile.stack...); err != nil {
+			return err
+		}
+	}
+
+	return errs.ErrorOrNil()
+}
+
+type writer struct {
+	directory  string
+	duplicates map[string]bool
+}
+
+func (w *writer) Write(out io.Writer, filenames ...string) error {
+	for _, filename := range filenames {
+		if filename == "" {
+			continue
+		}
+		err := func(filename string) error {
+			ext := filepath.Ext(filename)
+			base := strings.TrimSuffix(filename, ext)
+
+			if _, err := io.WriteString(out, header(base, ext)); err != nil {
+				return errors.Wrap(err, "file: creating header")
 			}
+
+			file, err := os.Open(filepath.Join(w.directory, filename))
+			if err != nil {
+				return errors.Wrapf(err, "file: open file: %s", filename)
+			}
+			defer file.Close()
 
 			scanner := bufio.NewScanner(file)
 
 			for scanner.Scan() {
-				content := scanner.Text()
-				if content != "" && content[0] != '#' && dups[content] {
+				content := strings.TrimSpace(scanner.Text())
+				if content != "" && content[0] != '#' && w.duplicates[content] {
 					continue
 				}
 
-				if _, err := io.WriteString(w, content+"\n"); err != nil {
-					return errors.Wrap(err, "file: writing")
+				if _, err := fmt.Fprintln(out, content); err != nil {
+					return errors.Wrap(err, "file: writing content")
 				}
-				dups[content] = true
+				w.duplicates[content] = true
 			}
 
 			if err := scanner.Err(); err != nil {
@@ -126,7 +166,7 @@ func Compose(w io.Writer, directory string, files ...File) error {
 			}
 
 			return nil
-		}(file.Name, file.Typ)
+		}(filename)
 
 		if err != nil {
 			return err
@@ -146,152 +186,9 @@ func header(name, typ string) string {
 		typ = ""
 	}
 
-	return fmt.Sprintf("### %s %s###\n", name, typ)
-}
-
-func SortFiles(files []File, special map[string]int) []File {
-	specials := make([]File, 0, len(files))
-	normals := make([]File, 0, len(files))
-
-	for _, f := range files {
-		if _, ok := special[Canon(f.Name)]; ok {
-			specials = append(specials, f)
-		} else {
-			normals = append(normals, f)
-		}
-	}
-
-	var specialFiles []File
-
-	if len(specials) > 0 {
-		specialSorter := fileSorter{
-			files: specials,
-			less: []lessFunc{
-				lessSpecial(special),
-				lessType,
-			},
-		}
-		sort.Sort(&specialSorter)
-
-		normals = append(normals, specialSorter.files[0])
-
-		n := 1
-		for ; n < len(specialSorter.files); n++ {
-			if Canon(specialSorter.files[n].Name) != Canon(specialSorter.files[n-1].Name) {
-				break
-			}
-
-			normals = append(normals, specialSorter.files[n])
-		}
-
-		specialFiles = specialSorter.files[n:]
-	}
-
-	normalSorter := fileSorter{
-		files: normals,
-		less: []lessFunc{
-			lessName(special),
-			lessType,
-		},
-	}
-	sort.Sort(&normalSorter)
-
-	return append(normalSorter.files, specialFiles...)
+	return fmt.Sprintf("\n### %s %s###\n", name, typ)
 }
 
 func Canon(v string) string {
 	return strings.ToLower(v)
-}
-
-type lessFunc func(f, g File) bool
-
-type fileSorter struct {
-	files []File
-	less  []lessFunc
-}
-
-func (s *fileSorter) Len() int {
-	return len(s.files)
-}
-
-func (s *fileSorter) Swap(i, j int) {
-	s.files[i], s.files[j] = s.files[j], s.files[i]
-}
-
-func (s *fileSorter) Less(i, j int) bool {
-	p, q := s.files[i], s.files[j]
-
-	var k int
-	for k = 0; k < len(s.less)-1; k++ {
-		less := s.less[k]
-
-		switch {
-		case less(p, q):
-			return true
-		case less(q, p):
-			return false
-		}
-	}
-
-	return s.less[k](p, q)
-}
-
-func lessSpecial(special map[string]int) func(File, File) bool {
-	return func(i, j File) bool {
-		in, jn := Canon(i.Name), Canon(j.Name)
-
-		io, ok := special[in]
-		if !ok {
-			return false
-		}
-
-		jo, ok := special[jn]
-		if !ok {
-			return false
-		}
-
-		return io < jo
-	}
-}
-
-func lessName(special map[string]int) func(File, File) bool {
-	return func(i, j File) bool {
-		in, jn := Canon(i.Name), Canon(j.Name)
-
-		_, iOK := special[in]
-		_, jOK := special[jn]
-
-		if iOK && jOK {
-			return false
-		}
-
-		return in < jn
-	}
-}
-
-func lessType(i, j File) bool {
-	typOrder := map[string]int{
-		`.gitignore`: 0,
-		`.patch`:     1,
-		`.stack`:     2,
-	}
-
-	in, jn := Canon(i.Name), Canon(j.Name)
-	if in != jn {
-		return false
-	}
-
-	it, jt := Canon(i.Typ), Canon(j.Typ)
-
-	io, ok := typOrder[it]
-	if !ok {
-		return false
-	}
-
-	jo, ok := typOrder[jt]
-	if !ok {
-		return false
-	}
-
-	return io < jo
 }
