@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/cockroachdb/errors"
@@ -32,9 +33,11 @@ func List(directory string) ([]string, error) {
 		base := strings.TrimSuffix(filename, ext)
 
 		if ext == ".gitignore" {
-			names = append(names, base)
+			names = append(names, Canon(base))
 		}
 	}
+
+	sort.Strings(names)
 
 	return names, nil
 }
