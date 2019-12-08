@@ -22,15 +22,12 @@ THE SOFTWARE.
 package cmd
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
-	"github.com/cockroachdb/errors"
 	"github.com/shihanng/gi/internal/file"
 	"github.com/shihanng/gi/internal/order"
 	"github.com/spf13/cobra"
-	"gopkg.in/src-d/go-git.v4"
 )
 
 const sourceRepo = `https://github.com/toptal/gitignore.git`
@@ -44,15 +41,6 @@ repository https://github.com/toptal/gitignore.git into $XDG_CACHE_HOME/gi.
 This means that internet connection is not required after the first successful run.`,
 	Args: cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		_, err := git.PlainClone(templatePath, false, &git.CloneOptions{
-			URL:      sourceRepo,
-			Depth:    1,
-			Progress: ioutil.Discard,
-		})
-		if err != nil && err != git.ErrRepositoryAlreadyExists {
-			return errors.Wrap(err, "gen: git clone")
-		}
-
 		items := args
 
 		orders, err := order.ReadOrder(filepath.Join(templatePath, `templates`, `order`))
