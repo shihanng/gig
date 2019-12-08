@@ -22,37 +22,25 @@ THE SOFTWARE.
 package cmd
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
-	"github.com/cockroachdb/errors"
 	"github.com/shihanng/gi/internal/file"
 	"github.com/shihanng/gi/internal/order"
 	"github.com/spf13/cobra"
-	"gopkg.in/src-d/go-git.v4"
 )
-
-const sourceRepo = `https://github.com/toptal/gitignore.git`
 
 // genCmd represents the gen command
 var genCmd = &cobra.Command{
 	Use:   "gen [template name]",
 	Short: "Generates .gitignore of the given inputs",
-	Long: `At the very first run the program will clone the templates
-repository https://github.com/toptal/gitignore.git into $XDG_CACHE_HOME/gi.
-This means that internet connection is not required after the first successful run.`,
+	Long: `Generates .gitignore of the given [template name]
+which should contain one or more valid names (case insensitive).
+Valid names can be obtained from the list subcommand.
+At the very first run the program will clone the templates repository
+https://github.com/toptal/gitignore.git into $XDG_CACHE_HOME/gi.`,
 	Args: cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		_, err := git.PlainClone(templatePath, false, &git.CloneOptions{
-			URL:      sourceRepo,
-			Depth:    1,
-			Progress: ioutil.Discard,
-		})
-		if err != nil && err != git.ErrRepositoryAlreadyExists {
-			return errors.Wrap(err, "gen: git clone")
-		}
-
 		items := args
 
 		orders, err := order.ReadOrder(filepath.Join(templatePath, `templates`, `order`))

@@ -27,7 +27,13 @@ import (
 	"path/filepath"
 
 	"github.com/OpenPeeDeeP/xdg"
+	"github.com/shihanng/gi/internal/repo"
 	"github.com/spf13/cobra"
+)
+
+var (
+	commitHash   string
+	templatePath string
 )
 
 var rootCmd = &cobra.Command{
@@ -36,11 +42,24 @@ var rootCmd = &cobra.Command{
 	Long: `gi is a command line tool to help you create useful .gitignore files
 for your project. It is inspired by gitignore.io and make use of
 the large collection of useful .gitignore templates of the web service.`,
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		r, err := repo.New(templatePath, repo.SourceRepo)
+		if err != nil {
+			return err
+		}
+
+		_, err = repo.Checkout(r, commitHash)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	},
 }
 
-var templatePath string
-
 func init() {
+	rootCmd.PersistentFlags().StringVarP(&commitHash, "commit-hash", "c", "",
+		"use templates from a specific commit hash of github.com/toptal/gitignore")
 	cobra.OnInitialize(func() {
 		templatePath = filepath.Join(xdg.CacheHome(), `gi`)
 	})
