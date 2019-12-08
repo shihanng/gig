@@ -34,9 +34,11 @@ import (
 var genCmd = &cobra.Command{
 	Use:   "gen [template name]",
 	Short: "Generates .gitignore of the given inputs",
-	Long: `At the very first run the program will clone the templates
-repository https://github.com/toptal/gitignore.git into $XDG_CACHE_HOME/gi.
-This means that internet connection is not required after the first successful run.`,
+	Long: `Generates .gitignore of the given [template name]
+which should contain one or more valid names (case insensitive).
+Valid names can be obtained from the list subcommand.
+At the very first run the program will clone the templates repository
+https://github.com/toptal/gitignore.git into $XDG_CACHE_HOME/gi.`,
 	Args: cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		items := args
