@@ -30,8 +30,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const sourceRepo = `https://github.com/toptal/gitignore.git`
-
 // genCmd represents the gen command
 var genCmd = &cobra.Command{
 	Use:   "gen [template name]",

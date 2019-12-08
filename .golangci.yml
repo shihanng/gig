@@ -36,7 +36,7 @@ issues:
     - path: cmd/root.go
       linters:
         - gochecknoglobals
-      text: "`templatePath` is a global variable"
+      text: "`(templatePath|commitHash)` is a global variable"
 
     # A long URL
     - path: internal/file/sort.go
