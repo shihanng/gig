@@ -31,27 +31,24 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// listCmd represents the list command
-var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List all supported templates",
-	Args:  cobra.NoArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		templates, err := file.List(filepath.Join(templatePath, `templates`))
-		if err != nil {
-			return err
-		}
-
-		for _, t := range templates {
-			if _, err := io.WriteString(os.Stdout, t+"\n"); err != nil {
-				return errors.Wrap(err, "cmd/list: outputing")
+func newListCmd(templatePath string) *cobra.Command {
+	return &cobra.Command{
+		Use:   "list",
+		Short: "List all supported templates",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			templates, err := file.List(filepath.Join(templatePath, `templates`))
+			if err != nil {
+				return err
 			}
-		}
 
-		return nil
-	},
-}
+			for _, t := range templates {
+				if _, err := io.WriteString(os.Stdout, t+"\n"); err != nil {
+					return errors.Wrap(err, "cmd/list: outputing")
+				}
+			}
 
-func init() {
-	rootCmd.AddCommand(listCmd)
+			return nil
+		},
+	}
 }

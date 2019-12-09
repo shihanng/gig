@@ -31,41 +31,49 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	commitHash   string
-	templatePath string
-)
-
-var rootCmd = &cobra.Command{
-	Use:   "gi",
-	Short: "A tool that generates .gitignore",
-	Long: `gi is a command line tool to help you create useful .gitignore files
+func newRootCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "gi",
+		Short: "A tool that generates .gitignore",
+		Long: `gi is a command line tool to help you create useful .gitignore files
 for your project. It is inspired by gitignore.io and make use of
 the large collection of useful .gitignore templates of the web service.`,
-	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+	}
+}
+
+func rootCmdRun(templatePath string, commitHash *string) func(cmd *cobra.Command, args []string) error {
+	return func(cmd *cobra.Command, args []string) error {
 		r, err := repo.New(templatePath, repo.SourceRepo)
 		if err != nil {
 			return err
 		}
 
-		_, err = repo.Checkout(r, commitHash)
+		_, err = repo.Checkout(r, *commitHash)
 		if err != nil {
 			return err
 		}
 
 		return nil
-	},
-}
-
-func init() {
-	rootCmd.PersistentFlags().StringVarP(&commitHash, "commit-hash", "c", "",
-		"use templates from a specific commit hash of github.com/toptal/gitignore")
-	cobra.OnInitialize(func() {
-		templatePath = filepath.Join(xdg.CacheHome(), `gi`)
-	})
+	}
 }
 
 func Execute() {
+	templatePath := filepath.Join(xdg.CacheHome(), `gi`)
+
+	var commitHash string
+
+	rootCmd := newRootCmd()
+
+	rootCmd.PersistentFlags().StringVarP(&commitHash, "commit-hash", "c", "",
+		"use templates from a specific commit hash of github.com/toptal/gitignore")
+
+	rootCmd.PersistentPreRunE = rootCmdRun(templatePath, &commitHash)
+
+	rootCmd.AddCommand(
+		newListCmd(templatePath),
+		newGenCmd(templatePath),
+	)
+
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
