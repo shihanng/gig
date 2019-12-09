@@ -30,30 +30,27 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// genCmd represents the gen command
-var genCmd = &cobra.Command{
-	Use:   "gen [template name]",
-	Short: "Generates .gitignore of the given inputs",
-	Long: `Generates .gitignore of the given [template name]
+func newGenCmd(templatePath string) *cobra.Command {
+	return &cobra.Command{
+		Use:   "gen [template name]",
+		Short: "Generates .gitignore of the given inputs",
+		Long: `Generates .gitignore of the given [template name]
 which should contain one or more valid names (case insensitive).
 Valid names can be obtained from the list subcommand.
 At the very first run the program will clone the templates repository
 https://github.com/toptal/gitignore.git into $XDG_CACHE_HOME/gi.`,
-	Args: cobra.MinimumNArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		items := args
+		Args: cobra.MinimumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			items := args
 
-		orders, err := order.ReadOrder(filepath.Join(templatePath, `templates`, `order`))
-		if err != nil {
-			return err
-		}
+			orders, err := order.ReadOrder(filepath.Join(templatePath, `templates`, `order`))
+			if err != nil {
+				return err
+			}
 
-		items = file.Sort(items, orders)
+			items = file.Sort(items, orders)
 
-		return file.Generate(os.Stdout, filepath.Join(templatePath, `templates`), items...)
-	},
-}
-
-func init() {
-	rootCmd.AddCommand(genCmd)
+			return file.Generate(os.Stdout, filepath.Join(templatePath, `templates`), items...)
+		},
+	}
 }

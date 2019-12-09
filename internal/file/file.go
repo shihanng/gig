@@ -100,6 +100,7 @@ func Generate(w io.Writer, directory string, items ...string) error {
 		directory:  directory,
 		duplicates: make(map[string]bool),
 	}
+	ew := &errWriter{w: w}
 
 	var errs *multierror.Error
 
@@ -107,26 +108,21 @@ func Generate(w io.Writer, directory string, items ...string) error {
 		ignoreFile := ignoreFiles[Canon(item)]
 
 		if ignoreFile.gitignore == "" {
-			if _, err := fmt.Fprintf(w, "\n#!! ERROR: %s is undefined !!#\n", item); err != nil {
-				return errors.Wrap(err, "file: writing")
-			}
+			ew.fprintf("\n#!! ERROR: %s is undefined !!#\n", item)
 
 			errs = multierror.Append(errs, errors.Errorf("file: %s is undefined", item))
 
 			continue
 		}
 
-		if err := writer.Write(w, ignoreFile.gitignore); err != nil {
+		files := append([]string{ignoreFile.gitignore, ignoreFile.patch}, ignoreFile.stack...)
+		if err := writer.Write(ew, files...); err != nil {
 			return err
 		}
+	}
 
-		if err := writer.Write(w, ignoreFile.patch); err != nil {
-			return err
-		}
-
-		if err := writer.Write(w, ignoreFile.stack...); err != nil {
-			return err
-		}
+	if ew.err != nil {
+		return ew.err
 	}
 
 	return errs.ErrorOrNil()
@@ -137,19 +133,18 @@ type writer struct {
 	duplicates map[string]bool
 }
 
-func (w *writer) Write(out io.Writer, filenames ...string) error {
+func (w *writer) Write(out *errWriter, filenames ...string) error {
+	var err error
 	for _, filename := range filenames {
-		if filename == "" {
+		if filename == "" || err != nil {
 			continue
 		}
 
-		err := func(filename string) error {
+		err = func(filename string) error {
 			ext := filepath.Ext(filename)
 			base := strings.TrimSuffix(filename, ext)
 
-			if _, err := io.WriteString(out, header(base, ext)); err != nil {
-				return errors.Wrap(err, "file: creating header")
-			}
+			out.fprintf(header(base, ext))
 
 			file, err := os.Open(filepath.Join(w.directory, filename))
 			if err != nil {
@@ -165,25 +160,29 @@ func (w *writer) Write(out io.Writer, filenames ...string) error {
 					continue
 				}
 
-				if _, err := fmt.Fprintln(out, content); err != nil {
-					return errors.Wrap(err, "file: writing content")
-				}
+				out.fprintf("%s\n", content)
 				w.duplicates[content] = true
 			}
 
-			if err := scanner.Err(); err != nil {
-				return errors.Wrap(err, "file: scanning")
-			}
-
-			return nil
+			return errors.Wrap(scanner.Err(), "file: scanning")
 		}(filename)
-
-		if err != nil {
-			return err
-		}
 	}
 
-	return nil
+	return err
+}
+
+type errWriter struct {
+	w   io.Writer
+	err error
+}
+
+func (ew *errWriter) fprintf(format string, a ...interface{}) {
+	if ew.err != nil {
+		return
+	}
+
+	_, err := fmt.Fprintf(ew.w, format, a...)
+	ew.err = errors.Wrap(err, "file: writing")
 }
 
 func header(name, typ string) string {

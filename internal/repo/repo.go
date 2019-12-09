@@ -25,11 +25,8 @@ func New(path, repoSource string) (*git.Repository, error) {
 	}
 
 	repo, err = git.PlainOpen(path)
-	if err != nil {
-		return nil, errors.Wrap(err, "repo: failed open repo")
-	}
 
-	return repo, nil
+	return repo, errors.Wrap(err, "repo: failed open repo")
 }
 
 type repoer interface {
