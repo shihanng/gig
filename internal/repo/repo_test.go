@@ -20,7 +20,7 @@ type RepoSuite struct {
 }
 
 func (s *RepoSuite) SetupTest() {
-	dir, err := ioutil.TempDir("", "gi")
+	dir, err := ioutil.TempDir("", "gig")
 	require.NoError(s.T(), err)
 	s.tempDir = dir
 }

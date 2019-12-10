@@ -27,7 +27,7 @@ import (
 	"path/filepath"
 
 	"github.com/cockroachdb/errors"
-	"github.com/shihanng/gi/internal/file"
+	"github.com/shihanng/gig/internal/file"
 	"github.com/spf13/cobra"
 )
 

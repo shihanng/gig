@@ -35,7 +35,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestCli(t *testing.T) {
-	actual, err := exec.Command("./gi", "gen", "go").CombinedOutput()
+	actual, err := exec.Command("./gig", "gen", "go").CombinedOutput()
 	assert.NoError(t, err)
 
 	goldenPath := `./testdata/cli.golden`
@@ -78,7 +78,7 @@ func TestCheckGitIgnoreIO(t *testing.T) {
 	expectedBytes := expected.Bytes()
 	expectedBytes = expectedBytes[:len(expectedBytes)-1]
 
-	actual, err := exec.Command("./gi", "gen",
+	actual, err := exec.Command("./gig", "gen",
 		"Django", "androidstudio", "java", "go", "ada", "zsh", "c", "gradle", "go").CombinedOutput()
 	assert.NoError(t, err)
 	assert.Equal(t, string(expectedBytes), string(actual))
@@ -95,7 +95,7 @@ func TestList(t *testing.T) {
 
 	expectedS := bytes.Split(bytes.ReplaceAll(expected, []byte(","), []byte("\n")), []byte("\n"))
 
-	actual, err := exec.Command("./gi", "-c", "640f03b1f9906c5dcb788d36ec5c1095264a10ae", "list").CombinedOutput()
+	actual, err := exec.Command("./gig", "-c", "640f03b1f9906c5dcb788d36ec5c1095264a10ae", "list").CombinedOutput()
 	assert.NoError(t, err)
 
 	actualS := bytes.Split(bytes.ToLower(actual), []byte("\n"))
