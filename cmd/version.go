@@ -19,16 +19,23 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-package main
+package cmd
 
 import (
-	"os"
+	"fmt"
+	"io"
 
-	"github.com/shihanng/gig/cmd"
+	"github.com/spf13/cobra"
 )
 
-var version = "dev"
-
-func main() {
-	cmd.Execute(os.Stdout, version)
+func newVersionCmd(w io.Writer, templatePath, version string, commitHash *string) *cobra.Command {
+	return &cobra.Command{
+		Use:   "version",
+		Short: "Print the version number and other useful info",
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Fprintf(w, "gig version %s\n", version)
+			fmt.Fprintf(w, "Cached github.com/toptal/gitignore in: %s\n", templatePath)
+			fmt.Fprintf(w, "Using github.com/toptal/gitignore commit hash: %s\n", *commitHash)
+		},
+	}
 }
