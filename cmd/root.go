@@ -27,15 +27,15 @@ import (
 	"path/filepath"
 
 	"github.com/OpenPeeDeeP/xdg"
-	"github.com/shihanng/gi/internal/repo"
+	"github.com/shihanng/gig/internal/repo"
 	"github.com/spf13/cobra"
 )
 
 func newRootCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:   "gi",
+		Use:   "gig",
 		Short: "A tool that generates .gitignore",
-		Long: `gi is a command line tool to help you create useful .gitignore files
+		Long: `gig is a command line tool to help you create useful .gitignore files
 for your project. It is inspired by gitignore.io and make use of
 the large collection of useful .gitignore templates of the web service.`,
 	}
@@ -58,7 +58,7 @@ func rootCmdRun(templatePath string, commitHash *string) func(cmd *cobra.Command
 }
 
 func Execute() {
-	templatePath := filepath.Join(xdg.CacheHome(), `gi`)
+	templatePath := filepath.Join(xdg.CacheHome(), `gig`)
 
 	var commitHash string
 

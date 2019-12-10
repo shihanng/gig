@@ -1,5 +1,5 @@
 .PHONY: clean test
-build: gi
+build: gig
 
 test:
 	go test -race -v ./... -count=1
@@ -10,8 +10,8 @@ integ-test:
 lint:
 	docker run --rm -v $$(pwd):/app -w /app golangci/golangci-lint:latest golangci-lint run -v
 	
-gi: 
+gig:
 	go build .
 
 clean:
-	rm gi
+	rm gig

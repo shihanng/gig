@@ -25,8 +25,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/shihanng/gi/internal/file"
-	"github.com/shihanng/gi/internal/order"
+	"github.com/shihanng/gig/internal/file"
+	"github.com/shihanng/gig/internal/order"
 	"github.com/spf13/cobra"
 )
 
@@ -38,7 +38,7 @@ func newGenCmd(templatePath string) *cobra.Command {
 which should contain one or more valid names (case insensitive).
 Valid names can be obtained from the list subcommand.
 At the very first run the program will clone the templates repository
-https://github.com/toptal/gitignore.git into $XDG_CACHE_HOME/gi.`,
+https://github.com/toptal/gitignore.git into $XDG_CACHE_HOME/gig.`,
 		Args: cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			items := args

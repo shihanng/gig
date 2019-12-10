@@ -23,6 +23,6 @@
 /vendor/
 /Godeps/
 
-### gi ###
+### gig ###
 bin/**
 dist/**
