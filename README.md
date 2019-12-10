@@ -1,4 +1,11 @@
-# gig [![](https://github.com/shihanng/gig/workflows/main/badge.svg?branch=develop)](https://github.com/shihanng/gig/actions?query=workflow%3Amain) [![](https://github.com/shihanng/gig/workflows/release/badge.svg?branch=develop)](https://github.com/shihanng/gig/actions?query=workflow%3Arelease) [![GitHub](https://img.shields.io/github/license/shihanng/gig)](https://github.com/shihanng/gig/blob/develop/LICENSE) [![GitHub release (latest by date)](https://img.shields.io/github/v/release/shihanng/gig)](https://github.com/shihanng/gig/releases) [![Go Report Card](https://goreportcard.com/badge/github.com/shihanng/gig)](https://goreportcard.com/report/github.com/shihanng/gig) [![Coverage Status](https://coveralls.io/repos/github/shihanng/gig/badge.svg?branch=develop)](https://coveralls.io/github/shihanng/gig?branch=develop)
+# `gig` -- .*g*it*i*gnore *g*enerator
+
+[![](https://github.com/shihanng/gig/workflows/main/badge.svg?branch=develop)](https://github.com/shihanng/gig/actions?query=workflow%3Amain)
+[![](https://github.com/shihanng/gig/workflows/release/badge.svg?branch=develop)](https://github.com/shihanng/gig/actions?query=workflow%3Arelease)
+[![GitHub](https://img.shields.io/github/license/shihanng/gig)](https://github.com/shihanng/gig/blob/develop/LICENSE)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/shihanng/gig)](https://github.com/shihanng/gig/releases)
+[![Go Report Card](https://goreportcard.com/badge/github.com/shihanng/gig)](https://goreportcard.com/report/github.com/shihanng/gig)
+[![Coverage Status](https://coveralls.io/repos/github/shihanng/gig/badge.svg?branch=develop)](https://coveralls.io/github/shihanng/gig?branch=develop)
 
 `gig` is a command line tool to help you create useful `.gitignore` files for your project.
 It is inspired by [gitignore.io](https://www.gitignore.io/) and make use of
