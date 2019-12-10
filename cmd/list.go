@@ -23,7 +23,6 @@ package cmd
 
 import (
 	"io"
-	"os"
 	"path/filepath"
 
 	"github.com/cockroachdb/errors"
@@ -31,7 +30,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newListCmd(templatePath string) *cobra.Command {
+func newListCmd(w io.Writer, templatePath string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "list",
 		Short: "List all supported templates",
@@ -43,7 +42,7 @@ func newListCmd(templatePath string) *cobra.Command {
 			}
 
 			for _, t := range templates {
-				if _, err := io.WriteString(os.Stdout, t+"\n"); err != nil {
+				if _, err := io.WriteString(w, t+"\n"); err != nil {
 					return errors.Wrap(err, "cmd/list: outputing")
 				}
 			}
