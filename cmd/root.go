@@ -49,16 +49,18 @@ func rootCmdRun(templatePath string, commitHash *string) func(cmd *cobra.Command
 			return err
 		}
 
-		_, err = repo.Checkout(r, *commitHash)
+		ch, err := repo.Checkout(r, *commitHash)
 		if err != nil {
 			return err
 		}
+
+		*commitHash = ch
 
 		return nil
 	}
 }
 
-func Execute(w io.Writer) {
+func Execute(w io.Writer, version string) {
 	templatePath := filepath.Join(xdg.CacheHome(), `gig`)
 
 	var commitHash string
@@ -73,6 +75,7 @@ func Execute(w io.Writer) {
 	rootCmd.AddCommand(
 		newListCmd(w, templatePath),
 		newGenCmd(w, templatePath),
+		newVersionCmd(w, templatePath, version, &commitHash),
 	)
 
 	if err := rootCmd.Execute(); err != nil {
