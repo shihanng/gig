@@ -21,8 +21,12 @@ THE SOFTWARE.
 */
 package main
 
-import "github.com/shihanng/gig/cmd"
+import (
+	"os"
+
+	"github.com/shihanng/gig/cmd"
+)
 
 func main() {
-	cmd.Execute()
+	cmd.Execute(os.Stdout)
 }

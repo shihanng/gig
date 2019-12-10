@@ -22,7 +22,7 @@ THE SOFTWARE.
 package cmd
 
 import (
-	"os"
+	"io"
 	"path/filepath"
 
 	"github.com/shihanng/gig/internal/file"
@@ -30,7 +30,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newGenCmd(templatePath string) *cobra.Command {
+func newGenCmd(w io.Writer, templatePath string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "gen [template name]",
 		Short: "Generates .gitignore of the given inputs",
@@ -50,7 +50,7 @@ https://github.com/toptal/gitignore.git into $XDG_CACHE_HOME/gig.`,
 
 			items = file.Sort(items, orders)
 
-			return file.Generate(os.Stdout, filepath.Join(templatePath, `templates`), items...)
+			return file.Generate(w, filepath.Join(templatePath, `templates`), items...)
 		},
 	}
 }

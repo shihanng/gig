@@ -23,6 +23,7 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 
@@ -57,7 +58,7 @@ func rootCmdRun(templatePath string, commitHash *string) func(cmd *cobra.Command
 	}
 }
 
-func Execute() {
+func Execute(w io.Writer) {
 	templatePath := filepath.Join(xdg.CacheHome(), `gig`)
 
 	var commitHash string
@@ -70,8 +71,8 @@ func Execute() {
 	rootCmd.PersistentPreRunE = rootCmdRun(templatePath, &commitHash)
 
 	rootCmd.AddCommand(
-		newListCmd(templatePath),
-		newGenCmd(templatePath),
+		newListCmd(w, templatePath),
+		newGenCmd(w, templatePath),
 	)
 
 	if err := rootCmd.Execute(); err != nil {
