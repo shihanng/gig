@@ -53,5 +53,11 @@ func (c *command) genRunE(cmd *cobra.Command, args []string) error {
 
 	items = file.Sort(items, orders)
 
-	return file.Generate(c.output, filepath.Join(c.templatePath, `templates`), items...)
+	wc, err := c.newWriteCloser()
+	if err != nil {
+		return err
+	}
+	defer wc.Close()
+
+	return file.Generate(wc, filepath.Join(c.templatePath, `templates`), items...)
 }

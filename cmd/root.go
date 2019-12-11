@@ -27,8 +27,10 @@ import (
 	"path/filepath"
 
 	"github.com/OpenPeeDeeP/xdg"
+	"github.com/cockroachdb/errors"
 	"github.com/shihanng/gig/internal/repo"
 	"github.com/spf13/cobra"
+	"gopkg.in/src-d/go-git.v4/utils/ioutil"
 )
 
 func Execute(w io.Writer, version string) {
@@ -43,9 +45,14 @@ func Execute(w io.Writer, version string) {
 	rootCmd.PersistentFlags().StringVarP(&command.commitHash, "commit-hash", "c", "",
 		"use templates from a specific commit hash of github.com/toptal/gitignore")
 
+	genCmd := newGenCmd(command)
+
+	genCmd.Flags().BoolVarP(&command.genIsFile, "file", "f", false,
+		"if specified will create .gitignore file in the current working directory")
+
 	rootCmd.AddCommand(
 		newListCmd(command),
-		newGenCmd(command),
+		genCmd,
 		newVersionCmd(command),
 	)
 
@@ -70,6 +77,8 @@ type command struct {
 	commitHash   string
 	templatePath string
 	version      string
+
+	genIsFile bool
 }
 
 func (c *command) RootRunE(cmd *cobra.Command, args []string) error {
@@ -86,4 +95,17 @@ func (c *command) RootRunE(cmd *cobra.Command, args []string) error {
 	c.commitHash = ch
 
 	return nil
+}
+
+func (c *command) newWriteCloser() (io.WriteCloser, error) {
+	if c.genIsFile {
+		f, err := os.Create(".gitignore")
+		if err != nil {
+			return nil, errors.Wrap(err, "cmd: create new file")
+		}
+
+		return f, nil
+	}
+
+	return ioutil.WriteNopCloser(c.output), nil
 }
