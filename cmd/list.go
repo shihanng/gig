@@ -23,7 +23,6 @@ package cmd
 
 import (
 	"io"
-	"path/filepath"
 
 	"github.com/cockroachdb/errors"
 	"github.com/shihanng/gig/internal/file"
@@ -40,7 +39,7 @@ func newListCmd(c *command) *cobra.Command {
 }
 
 func (c *command) listRunE(cmd *cobra.Command, args []string) error {
-	templates, err := file.List(filepath.Join(c.templatePath, `templates`))
+	templates, err := file.List(c.templatePath())
 	if err != nil {
 		return err
 	}

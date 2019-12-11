@@ -10,20 +10,32 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 
-	"github.com/OpenPeeDeeP/xdg"
 	"github.com/shihanng/gig/cmd"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 )
 
 var update = flag.Bool("update", false, "update .golden files")
 
-func TestCli(t *testing.T) {
-	os.Args = []string{"gig", "gen", "go"}
+type MainTestSuite struct {
+	suite.Suite
+	tempDir string
+}
+
+func (s *MainTestSuite) SetupSuite() {
+	dir, err := ioutil.TempDir("", "gig")
+	s.Require().NoError(err)
+	s.tempDir = dir
+}
+
+func (s *MainTestSuite) TearDownSuite() {
+	s.Require().NoError(os.RemoveAll(s.tempDir))
+}
+
+func (s *MainTestSuite) TestCli() {
+	os.Args = []string{"gig", "gen", "go", "--cache-path", s.tempDir}
 
 	actual := new(bytes.Buffer)
 
@@ -32,19 +44,19 @@ func TestCli(t *testing.T) {
 	goldenPath := `./testdata/cli.golden`
 
 	if *update {
-		require.NoError(t, ioutil.WriteFile(goldenPath, actual.Bytes(), 0644))
+		s.Require().NoError(ioutil.WriteFile(goldenPath, actual.Bytes(), 0644))
 	}
 
 	expected, err := ioutil.ReadFile(goldenPath)
-	require.NoError(t, err)
-	assert.Equal(t, expected, actual.Bytes())
+	s.Require().NoError(err)
+	s.Assert().Equal(expected, actual.Bytes())
 }
 
-func TestCheckGitIgnoreIO(t *testing.T) {
+func (s *MainTestSuite) TestCheckGitIgnoreIO() {
 	// Testing against "reactnative", "mean" is avoided because the result for stack from
 	// gitignore.io seems not in order.
 	resp, err := http.Get(`https://www.gitignore.io/api/django,androidstudio,java,go,ada,zsh,c,gradle`)
-	require.NoError(t, err)
+	s.Require().NoError(err)
 
 	defer resp.Body.Close()
 
@@ -63,33 +75,34 @@ func TestCheckGitIgnoreIO(t *testing.T) {
 		}
 
 		_, err := expected.WriteString(content + "\n")
-		require.NoError(t, err)
+		s.Require().NoError(err)
 	}
 
 	expectedBytes := expected.Bytes()
 	expectedBytes = expectedBytes[:len(expectedBytes)-1]
 
-	os.Args = []string{"gig", "gen", "Django", "androidstudio", "java", "go", "ada", "zsh", "c", "gradle", "go"}
+	os.Args = []string{"gig", "--cache-path", s.tempDir, "gen",
+		"Django", "androidstudio", "java", "go", "ada", "zsh", "c", "gradle", "go"}
 
 	actual := new(bytes.Buffer)
 
 	cmd.Execute(actual, "test")
 
-	assert.Equal(t, string(expectedBytes), actual.String())
+	s.Assert().Equal(expectedBytes, actual.Bytes())
 }
 
-func TestList(t *testing.T) {
+func (s *MainTestSuite) TestList() {
 	resp, err := http.Get(`https://www.gitignore.io/api/list`)
-	require.NoError(t, err)
+	s.Require().NoError(err)
 
 	defer resp.Body.Close()
 
 	expected, err := ioutil.ReadAll(resp.Body)
-	require.NoError(t, err)
+	s.Require().NoError(err)
 
 	expectedS := bytes.Split(bytes.ReplaceAll(expected, []byte(","), []byte("\n")), []byte("\n"))
 
-	os.Args = []string{"gig", "-c", "640f03b1f9906c5dcb788d36ec5c1095264a10ae", "list"}
+	os.Args = []string{"gig", "--cache-path", s.tempDir, "-c", "640f03b1f9906c5dcb788d36ec5c1095264a10ae", "list"}
 
 	actual := new(bytes.Buffer)
 
@@ -98,11 +111,11 @@ func TestList(t *testing.T) {
 	actualS := bytes.Split(bytes.ToLower(actual.Bytes()), []byte("\n"))
 	actualS = actualS[:len(actualS)-1]
 
-	assert.Equal(t, expectedS, actualS)
+	s.Assert().Equal(expectedS, actualS)
 }
 
-func TestVersion(t *testing.T) {
-	os.Args = []string{"gig", "version", "-c", "f0bddaeda3368130d52bde2b62a9df741f6117d4"}
+func (s *MainTestSuite) TestVersion() {
+	os.Args = []string{"gig", "--cache-path", s.tempDir, "version", "-c", "f0bddaeda3368130d52bde2b62a9df741f6117d4"}
 
 	actual := new(bytes.Buffer)
 
@@ -110,9 +123,13 @@ func TestVersion(t *testing.T) {
 
 	expected := strings.Join([]string{
 		"gig version test",
-		fmt.Sprintf("Cached github.com/toptal/gitignore in: %s", filepath.Join(xdg.CacheHome(), `gig`)),
+		fmt.Sprintf("Cached github.com/toptal/gitignore in: %s", s.tempDir),
 		"Using github.com/toptal/gitignore commit hash: f0bddaeda3368130d52bde2b62a9df741f6117d4",
 	}, "\n") + "\n"
 
-	assert.Equal(t, expected, actual.String())
+	s.Assert().Equal(expected, actual.String())
+}
+
+func TestMainTestSuite(t *testing.T) {
+	suite.Run(t, new(MainTestSuite))
 }

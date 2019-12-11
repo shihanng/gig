@@ -37,6 +37,6 @@ func newVersionCmd(c *command) *cobra.Command {
 
 func (c *command) versionRunE(cmd *cobra.Command, args []string) {
 	fmt.Fprintf(c.output, "gig version %s\n", c.version)
-	fmt.Fprintf(c.output, "Cached github.com/toptal/gitignore in: %s\n", c.templatePath)
+	fmt.Fprintf(c.output, "Cached github.com/toptal/gitignore in: %s\n", c.cachePath)
 	fmt.Fprintf(c.output, "Using github.com/toptal/gitignore commit hash: %s\n", c.commitHash)
 }
