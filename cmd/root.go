@@ -32,54 +32,60 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newRootCmd() *cobra.Command {
-	return &cobra.Command{
-		Use:   "gig",
-		Short: "A tool that generates .gitignore",
-		Long: `gig is a command line tool to help you create useful .gitignore files
-for your project. It is inspired by gitignore.io and make use of
-the large collection of useful .gitignore templates of the web service.`,
-	}
-}
-
-func rootCmdRun(templatePath string, commitHash *string) func(cmd *cobra.Command, args []string) error {
-	return func(cmd *cobra.Command, args []string) error {
-		r, err := repo.New(templatePath, repo.SourceRepo)
-		if err != nil {
-			return err
-		}
-
-		ch, err := repo.Checkout(r, *commitHash)
-		if err != nil {
-			return err
-		}
-
-		*commitHash = ch
-
-		return nil
-	}
-}
-
 func Execute(w io.Writer, version string) {
-	templatePath := filepath.Join(xdg.CacheHome(), `gig`)
+	command := &command{
+		output:       w,
+		templatePath: filepath.Join(xdg.CacheHome(), `gig`),
+		version:      version,
+	}
 
-	var commitHash string
+	rootCmd := newRootCmd(command)
 
-	rootCmd := newRootCmd()
-
-	rootCmd.PersistentFlags().StringVarP(&commitHash, "commit-hash", "c", "",
+	rootCmd.PersistentFlags().StringVarP(&command.commitHash, "commit-hash", "c", "",
 		"use templates from a specific commit hash of github.com/toptal/gitignore")
 
-	rootCmd.PersistentPreRunE = rootCmdRun(templatePath, &commitHash)
-
 	rootCmd.AddCommand(
-		newListCmd(w, templatePath),
-		newGenCmd(w, templatePath),
-		newVersionCmd(w, templatePath, version, &commitHash),
+		newListCmd(command),
+		newGenCmd(command),
+		newVersionCmd(command),
 	)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+}
+
+func newRootCmd(c *command) *cobra.Command {
+	return &cobra.Command{
+		Use:   "gig",
+		Short: "A tool that generates .gitignore",
+		Long: `gig is a command line tool to help you create useful .gitignore files
+for your project. It is inspired by gitignore.io and make use of
+the large collection of useful .gitignore templates of the web service.`,
+		PersistentPreRunE: c.RootRunE,
+	}
+}
+
+type command struct {
+	output       io.Writer
+	commitHash   string
+	templatePath string
+	version      string
+}
+
+func (c *command) RootRunE(cmd *cobra.Command, args []string) error {
+	r, err := repo.New(c.templatePath, repo.SourceRepo)
+	if err != nil {
+		return err
+	}
+
+	ch, err := repo.Checkout(r, c.commitHash)
+	if err != nil {
+		return err
+	}
+
+	c.commitHash = ch
+
+	return nil
 }

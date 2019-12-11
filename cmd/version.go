@@ -23,19 +23,20 @@ package cmd
 
 import (
 	"fmt"
-	"io"
 
 	"github.com/spf13/cobra"
 )
 
-func newVersionCmd(w io.Writer, templatePath, version string, commitHash *string) *cobra.Command {
+func newVersionCmd(c *command) *cobra.Command {
 	return &cobra.Command{
 		Use:   "version",
 		Short: "Print the version number and other useful info",
-		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Fprintf(w, "gig version %s\n", version)
-			fmt.Fprintf(w, "Cached github.com/toptal/gitignore in: %s\n", templatePath)
-			fmt.Fprintf(w, "Using github.com/toptal/gitignore commit hash: %s\n", *commitHash)
-		},
+		Run:   c.versionRunE,
 	}
+}
+
+func (c *command) versionRunE(cmd *cobra.Command, args []string) {
+	fmt.Fprintf(c.output, "gig version %s\n", c.version)
+	fmt.Fprintf(c.output, "Cached github.com/toptal/gitignore in: %s\n", c.templatePath)
+	fmt.Fprintf(c.output, "Using github.com/toptal/gitignore commit hash: %s\n", c.commitHash)
 }
