@@ -22,64 +22,90 @@ THE SOFTWARE.
 package cmd
 
 import (
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 
 	"github.com/OpenPeeDeeP/xdg"
+	"github.com/cockroachdb/errors"
 	"github.com/shihanng/gig/internal/repo"
 	"github.com/spf13/cobra"
+	"gopkg.in/src-d/go-git.v4/utils/ioutil"
 )
 
-func newRootCmd() *cobra.Command {
+func Execute(w io.Writer, version string) {
+	command := &command{
+		output:       w,
+		templatePath: filepath.Join(xdg.CacheHome(), `gig`),
+		version:      version,
+	}
+
+	rootCmd := newRootCmd(command)
+
+	rootCmd.PersistentFlags().StringVarP(&command.commitHash, "commit-hash", "c", "",
+		"use templates from a specific commit hash of github.com/toptal/gitignore")
+
+	genCmd := newGenCmd(command)
+
+	genCmd.Flags().BoolVarP(&command.genIsFile, "file", "f", false,
+		"if specified will create .gitignore file in the current working directory")
+
+	rootCmd.AddCommand(
+		newListCmd(command),
+		genCmd,
+		newVersionCmd(command),
+	)
+
+	if err := rootCmd.Execute(); err != nil {
+		os.Exit(1)
+	}
+}
+
+func newRootCmd(c *command) *cobra.Command {
 	return &cobra.Command{
 		Use:   "gig",
 		Short: "A tool that generates .gitignore",
 		Long: `gig is a command line tool to help you create useful .gitignore files
 for your project. It is inspired by gitignore.io and make use of
 the large collection of useful .gitignore templates of the web service.`,
+		PersistentPreRunE: c.RootRunE,
 	}
 }
 
-func rootCmdRun(templatePath string, commitHash *string) func(cmd *cobra.Command, args []string) error {
-	return func(cmd *cobra.Command, args []string) error {
-		r, err := repo.New(templatePath, repo.SourceRepo)
-		if err != nil {
-			return err
-		}
+type command struct {
+	output       io.Writer
+	commitHash   string
+	templatePath string
+	version      string
 
-		ch, err := repo.Checkout(r, *commitHash)
-		if err != nil {
-			return err
-		}
-
-		*commitHash = ch
-
-		return nil
-	}
+	genIsFile bool
 }
 
-func Execute(w io.Writer, version string) {
-	templatePath := filepath.Join(xdg.CacheHome(), `gig`)
-
-	var commitHash string
-
-	rootCmd := newRootCmd()
-
-	rootCmd.PersistentFlags().StringVarP(&commitHash, "commit-hash", "c", "",
-		"use templates from a specific commit hash of github.com/toptal/gitignore")
-
-	rootCmd.PersistentPreRunE = rootCmdRun(templatePath, &commitHash)
-
-	rootCmd.AddCommand(
-		newListCmd(w, templatePath),
-		newGenCmd(w, templatePath),
-		newVersionCmd(w, templatePath, version, &commitHash),
-	)
-
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+func (c *command) RootRunE(cmd *cobra.Command, args []string) error {
+	r, err := repo.New(c.templatePath, repo.SourceRepo)
+	if err != nil {
+		return err
 	}
+
+	ch, err := repo.Checkout(r, c.commitHash)
+	if err != nil {
+		return err
+	}
+
+	c.commitHash = ch
+
+	return nil
+}
+
+func (c *command) newWriteCloser() (io.WriteCloser, error) {
+	if c.genIsFile {
+		f, err := os.Create(".gitignore")
+		if err != nil {
+			return nil, errors.Wrap(err, "cmd: create new file")
+		}
+
+		return f, nil
+	}
+
+	return ioutil.WriteNopCloser(c.output), nil
 }

@@ -22,7 +22,6 @@ THE SOFTWARE.
 package cmd
 
 import (
-	"io"
 	"path/filepath"
 
 	"github.com/shihanng/gig/internal/file"
@@ -30,7 +29,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newGenCmd(w io.Writer, templatePath string) *cobra.Command {
+func newGenCmd(c *command) *cobra.Command {
 	return &cobra.Command{
 		Use:   "gen [template name]",
 		Short: "Generates .gitignore of the given inputs",
@@ -40,17 +39,26 @@ Valid names can be obtained from the list subcommand.
 At the very first run the program will clone the templates repository
 https://github.com/toptal/gitignore.git into $XDG_CACHE_HOME/gig.`,
 		Args: cobra.MinimumNArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			items := args
-
-			orders, err := order.ReadOrder(filepath.Join(templatePath, `templates`, `order`))
-			if err != nil {
-				return err
-			}
-
-			items = file.Sort(items, orders)
-
-			return file.Generate(w, filepath.Join(templatePath, `templates`), items...)
-		},
+		RunE: c.genRunE,
 	}
+}
+
+func (c *command) genRunE(cmd *cobra.Command, args []string) error {
+	items := args
+
+	orders, err := order.ReadOrder(filepath.Join(c.templatePath, `templates`, `order`))
+	if err != nil {
+		return err
+	}
+
+	items = file.Sort(items, orders)
+
+	wc, err := c.newWriteCloser()
+	if err != nil {
+		return err
+	}
+
+	defer wc.Close()
+
+	return file.Generate(wc, filepath.Join(c.templatePath, `templates`), items...)
 }
