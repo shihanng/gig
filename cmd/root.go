@@ -22,6 +22,7 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -35,15 +36,18 @@ import (
 
 func Execute(w io.Writer, version string) {
 	command := &command{
-		output:       w,
-		templatePath: filepath.Join(xdg.CacheHome(), `gig`),
-		version:      version,
+		output:    w,
+		cachePath: filepath.Join(xdg.CacheHome(), `gig`),
+		version:   version,
 	}
 
 	rootCmd := newRootCmd(command)
 
 	rootCmd.PersistentFlags().StringVarP(&command.commitHash, "commit-hash", "c", "",
 		"use templates from a specific commit hash of github.com/toptal/gitignore")
+
+	rootCmd.PersistentFlags().StringVarP(&command.cachePath, "cache-path", "", filepath.Join(xdg.CacheHome(), `gig`),
+		"location where the content of github.com/toptal/gitignore will be cached in")
 
 	genCmd := newGenCmd(command)
 
@@ -68,21 +72,21 @@ func newRootCmd(c *command) *cobra.Command {
 		Long: `gig is a command line tool to help you create useful .gitignore files
 for your project. It is inspired by gitignore.io and make use of
 the large collection of useful .gitignore templates of the web service.`,
-		PersistentPreRunE: c.RootRunE,
+		PersistentPreRunE: c.rootRunE,
 	}
 }
 
 type command struct {
-	output       io.Writer
-	commitHash   string
-	templatePath string
-	version      string
+	output     io.Writer
+	commitHash string
+	cachePath  string
+	version    string
 
 	genIsFile bool
 }
 
-func (c *command) RootRunE(cmd *cobra.Command, args []string) error {
-	r, err := repo.New(c.templatePath, repo.SourceRepo)
+func (c *command) rootRunE(cmd *cobra.Command, args []string) error {
+	r, err := repo.New(c.cachePath, repo.SourceRepo)
 	if err != nil {
 		return err
 	}
@@ -108,4 +112,9 @@ func (c *command) newWriteCloser() (io.WriteCloser, error) {
 	}
 
 	return ioutil.WriteNopCloser(c.output), nil
+}
+
+func (c *command) templatePath() string {
+	fmt.Println(c.cachePath)
+	return filepath.Join(c.cachePath, `templates`)
 }

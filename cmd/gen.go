@@ -46,7 +46,7 @@ https://github.com/toptal/gitignore.git into $XDG_CACHE_HOME/gig.`,
 func (c *command) genRunE(cmd *cobra.Command, args []string) error {
 	items := args
 
-	orders, err := order.ReadOrder(filepath.Join(c.templatePath, `templates`, `order`))
+	orders, err := order.ReadOrder(filepath.Join(c.templatePath(), `order`))
 	if err != nil {
 		return err
 	}
@@ -60,5 +60,5 @@ func (c *command) genRunE(cmd *cobra.Command, args []string) error {
 
 	defer wc.Close()
 
-	return file.Generate(wc, filepath.Join(c.templatePath, `templates`), items...)
+	return file.Generate(wc, c.templatePath(), items...)
 }
