@@ -22,10 +22,6 @@ THE SOFTWARE.
 package cmd
 
 import (
-	"path/filepath"
-
-	"github.com/shihanng/gig/internal/file"
-	"github.com/shihanng/gig/internal/order"
 	"github.com/spf13/cobra"
 )
 
@@ -44,21 +40,5 @@ https://github.com/toptal/gitignore.git into $XDG_CACHE_HOME/gig.`,
 }
 
 func (c *command) genRunE(cmd *cobra.Command, args []string) error {
-	items := args
-
-	orders, err := order.ReadOrder(filepath.Join(c.templatePath(), `order`))
-	if err != nil {
-		return err
-	}
-
-	items = file.Sort(items, orders)
-
-	wc, err := c.newWriteCloser()
-	if err != nil {
-		return err
-	}
-
-	defer wc.Close()
-
-	return file.Generate(wc, c.templatePath(), items...)
+	return c.generateIgnoreFile(args)
 }
