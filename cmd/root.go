@@ -22,7 +22,6 @@ THE SOFTWARE.
 package cmd
 
 import (
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -115,6 +114,5 @@ func (c *command) newWriteCloser() (io.WriteCloser, error) {
 }
 
 func (c *command) templatePath() string {
-	fmt.Println(c.cachePath)
 	return filepath.Join(c.cachePath, `templates`)
 }
