@@ -61,11 +61,17 @@ func Execute(w io.Writer, version string) {
 	searchCmd.Flags().BoolVarP(&command.genIsFile, "file", "f", false,
 		"if specified will create .gitignore file in the current working directory")
 
+	autogenCmd := newAutogenCmd(command)
+
+	autogenCmd.Flags().BoolVarP(&command.genIsFile, "file", "f", false,
+		"if specified will create .gitignore file in the current working directory")
+
 	rootCmd.AddCommand(
 		newListCmd(command),
 		genCmd,
 		newVersionCmd(command),
 		searchCmd,
+		autogenCmd,
 	)
 
 	if err := rootCmd.Execute(); err != nil {
