@@ -28,6 +28,8 @@ import (
 
 	"github.com/OpenPeeDeeP/xdg"
 	"github.com/cockroachdb/errors"
+	"github.com/shihanng/gig/internal/file"
+	"github.com/shihanng/gig/internal/order"
 	"github.com/shihanng/gig/internal/repo"
 	"github.com/spf13/cobra"
 	"gopkg.in/src-d/go-git.v4/utils/ioutil"
@@ -35,9 +37,10 @@ import (
 
 func Execute(w io.Writer, version string) {
 	command := &command{
-		output:    w,
-		cachePath: filepath.Join(xdg.CacheHome(), `gig`),
-		version:   version,
+		output:     w,
+		cachePath:  filepath.Join(xdg.CacheHome(), `gig`),
+		version:    version,
+		searchTool: "fzf -m",
 	}
 
 	rootCmd := newRootCmd(command)
@@ -53,10 +56,16 @@ func Execute(w io.Writer, version string) {
 	genCmd.Flags().BoolVarP(&command.genIsFile, "file", "f", false,
 		"if specified will create .gitignore file in the current working directory")
 
+	searchCmd := newSearchCmd(command)
+
+	searchCmd.Flags().BoolVarP(&command.genIsFile, "file", "f", false,
+		"if specified will create .gitignore file in the current working directory")
+
 	rootCmd.AddCommand(
 		newListCmd(command),
 		genCmd,
 		newVersionCmd(command),
+		searchCmd,
 	)
 
 	if err := rootCmd.Execute(); err != nil {
@@ -80,6 +89,7 @@ type command struct {
 	commitHash string
 	cachePath  string
 	version    string
+	searchTool string
 
 	genIsFile bool
 }
@@ -98,6 +108,24 @@ func (c *command) rootRunE(cmd *cobra.Command, args []string) error {
 	c.commitHash = ch
 
 	return nil
+}
+
+func (c *command) generateIgnoreFile(items []string) error {
+	orders, err := order.ReadOrder(filepath.Join(c.templatePath(), `order`))
+	if err != nil {
+		return err
+	}
+
+	items = file.Sort(items, orders)
+
+	wc, err := c.newWriteCloser()
+	if err != nil {
+		return err
+	}
+
+	defer wc.Close()
+
+	return file.Generate(wc, c.templatePath(), items...)
 }
 
 func (c *command) newWriteCloser() (io.WriteCloser, error) {
