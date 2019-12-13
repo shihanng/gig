@@ -39,10 +39,10 @@ go get github.com/shihanng/gig
 
 # Usage
 
-Use the supported language as input arguments, e.g. `Go Elm`.
+1. Use the supported language as input arguments, e.g. `Go Elm`.
 
 ```
-gig gen Go Elm
+$ gig gen Go Elm
 
 ### Elm ###
 # elm-package generated files
@@ -52,25 +52,16 @@ repl-temp-*
 
 ### Go ###
 # Binaries for programs and plugins
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
-
-# Test binary, built with `go test -c`
-*.test
-
-# Output of the go coverage tool, specifically when used with LiteIDE
-*.out
-
-# Dependency directories (remove the comment below to include it)
-# vendor/
-
-### Go Patch ###
-/vendor/
-/Godeps/
+...
 ```
+
+2. Use the search functionality (depends on [fzf](https://github.com/junegunn/fzf))
+
+```
+$ gig search
+```
+
+![gig search demo](./.github/images/search.gif)
 
 At the very first run the program will clone the templates repository <https://github.com/toptal/gitignore.git>
 into `$XDG_CACHE_HOME/gig`.
@@ -82,7 +73,7 @@ For more information:
 gig --help
 ```
 
-# Contributing
+# Contribute
 
 Found a bug or want to hack around? Clone the repository:
 
