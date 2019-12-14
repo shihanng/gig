@@ -46,10 +46,12 @@ func Execute(w io.Writer, version string) {
 	rootCmd := newRootCmd(command)
 
 	rootCmd.PersistentFlags().StringVarP(&command.commitHash, "commit-hash", "c", "",
-		"use templates from a specific commit hash of github.com/toptal/gitignore")
+		`use templates from a specific commit hash of
+github.com/toptal/gitignore`)
 
 	rootCmd.PersistentFlags().StringVarP(&command.cachePath, "cache-path", "", filepath.Join(xdg.CacheHome(), `gig`),
-		"location where the content of github.com/toptal/gitignore will be cached in")
+		`location where the content of github.com/toptal/gitignore
+will be cached in`)
 
 	genCmd := newGenCmd(command)
 
@@ -61,11 +63,17 @@ func Execute(w io.Writer, version string) {
 	searchCmd.Flags().BoolVarP(&command.genIsFile, "file", "f", false,
 		"if specified will create .gitignore file in the current working directory")
 
+	autogenCmd := newAutogenCmd(command)
+
+	autogenCmd.Flags().BoolVarP(&command.genIsFile, "file", "f", false,
+		"if specified will create .gitignore file in the current working directory")
+
 	rootCmd.AddCommand(
 		newListCmd(command),
 		genCmd,
 		newVersionCmd(command),
 		searchCmd,
+		autogenCmd,
 	)
 
 	if err := rootCmd.Execute(); err != nil {

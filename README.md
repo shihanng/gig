@@ -1,4 +1,4 @@
-# `gig` -- .*g*it*i*gnore *g*enerator
+# `gig` -- .gitignore generator
 
 [![](https://github.com/shihanng/gig/workflows/main/badge.svg?branch=develop)](https://github.com/shihanng/gig/actions?query=workflow%3Amain)
 [![](https://github.com/shihanng/gig/workflows/release/badge.svg?branch=develop)](https://github.com/shihanng/gig/actions?query=workflow%3Arelease)
@@ -39,7 +39,9 @@ go get github.com/shihanng/gig
 
 # Usage
 
-1. Use the supported language as input arguments, e.g. `Go Elm`.
+There are several ways you can generate the `.gitignore` file:
+
+### Using the supported language as input arguments
 
 ```
 $ gig gen Go Elm
@@ -55,7 +57,7 @@ repl-temp-*
 ...
 ```
 
-2. Use the search functionality (depends on [fzf](https://github.com/junegunn/fzf))
+### Using the search functionality (depends on [fzf](https://github.com/junegunn/fzf))
 
 ```
 $ gig search
@@ -67,13 +69,19 @@ At the very first run the program will clone the templates repository <https://g
 into `$XDG_CACHE_HOME/gig`.
 This means that internet connection is not required after the first successful run.
 
-For more information:
+### Using the EXPERIMENTAL auto generate functionality
+
+```
+$ gig autogen
+```
+
+### For more information, see
 
 ```
 gig --help
 ```
 
-# Contribute
+# Development
 
 Found a bug or want to hack around? Clone the repository:
 
@@ -93,5 +101,15 @@ Where `test` run the tests that can be run locally.
 `integ-test` run the tests that require internet access.
 `lint` help you write better Go codes.
 
-If you are adding new subcommand, we are using [cobra](https://github.com/spf13/cobra)
-and managed the version with [tools.go](./tools.go) and [go.mod](./go.mod).
+Add subcommand with [cobra](https://github.com/spf13/cobra)
+(version managed in [tools.go](./tools.go) with [go.mod](./go.mod)):
+
+```
+$ cobra --config .cobra.yaml add <new subcommand>
+```
+
+Update golden file:
+
+```
+$ go test . -tags=integration  -update
+```
