@@ -34,14 +34,14 @@ func (s *MainTestSuite) TearDownSuite() {
 	s.Require().NoError(os.RemoveAll(s.tempDir))
 }
 
-func (s *MainTestSuite) TestCli() {
+func (s *MainTestSuite) TestGen() {
 	os.Args = []string{"gig", "gen", "go", "--cache-path", s.tempDir}
 
 	actual := new(bytes.Buffer)
 
 	cmd.Execute(actual, "test")
 
-	goldenPath := `./testdata/cli.golden`
+	goldenPath := `./testdata/gen.golden`
 
 	if *update {
 		s.Require().NoError(ioutil.WriteFile(goldenPath, actual.Bytes(), 0644))
@@ -128,6 +128,24 @@ func (s *MainTestSuite) TestVersion() {
 	}, "\n") + "\n"
 
 	s.Assert().Equal(expected, actual.String())
+}
+
+func (s *MainTestSuite) TestAutogen() {
+	os.Args = []string{"gig", "autogen", "--cache-path", s.tempDir}
+
+	actual := new(bytes.Buffer)
+
+	cmd.Execute(actual, "test")
+
+	goldenPath := `./testdata/autogen.golden`
+
+	if *update {
+		s.Require().NoError(ioutil.WriteFile(goldenPath, actual.Bytes(), 0644))
+	}
+
+	expected, err := ioutil.ReadFile(goldenPath)
+	s.Require().NoError(err)
+	s.Assert().Equal(expected, actual.Bytes())
 }
 
 func TestMainTestSuite(t *testing.T) {

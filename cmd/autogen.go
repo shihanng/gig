@@ -37,7 +37,7 @@ import (
 func newAutogenCmd(c *command) *cobra.Command {
 	return &cobra.Command{
 		Use:   "autogen",
-		Short: "(EXPERIMENTAL) Automatically generate .gitignore based on the content of the current directory",
+		Short: "(EXPERIMENTAL) I'm Feeling Lucky",
 		Long: `(EXPERIMENTAL) Automatically generate .gitignore based on the content of the current directory.
 
 This feature uses github.com/src-d/enry
