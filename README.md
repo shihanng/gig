@@ -25,6 +25,12 @@ Therefore this tool is created to solve the two main problems above.
 
 # Install
 
+## [Homebrew (macOS)](https://github.com/shihanng/homebrew-gig)
+
+```
+brew install shihanng/gig/gig
+```
+
 ## Binaries
 
 The [release page contains](https://github.com/shihanng/gig/releases) binaries built
@@ -57,6 +63,10 @@ repl-temp-*
 ...
 ```
 
+At the very first run the program will clone the templates repository <https://github.com/toptal/gitignore.git>
+into `$XDG_CACHE_HOME/gig`.
+This means that internet connection is not required after the first successful run.
+
 ### Using the search functionality (depends on [fzf](https://github.com/junegunn/fzf))
 
 ```
@@ -64,10 +74,6 @@ $ gig search
 ```
 
 ![gig search demo](./.github/images/search.gif)
-
-At the very first run the program will clone the templates repository <https://github.com/toptal/gitignore.git>
-into `$XDG_CACHE_HOME/gig`.
-This means that internet connection is not required after the first successful run.
 
 ### Using the EXPERIMENTAL auto generate functionality
 
@@ -111,5 +117,5 @@ $ cobra --config .cobra.yaml add <new subcommand>
 Update golden file:
 
 ```
-$ go test . -tags=integration  -update
+$ go test . -tags=integration -update
 ```

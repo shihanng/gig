@@ -18,6 +18,22 @@ archives:
       windows: Windows
       amd64: x86_64
 
+brews:
+  - github:
+      owner: shihanng
+      name: homebrew-gig
+    commit_author:
+      name: "Shi Han NG"
+      email: shihanng@gmail.com
+    description: "gitignore file generator"
+    homepage: "https://github.com/shihanng/gig"
+    dependencies:
+      - fzf
+    install: |
+      bin.install Dir['gig']
+    test: |
+      system "#{bin}/gig"
+
 checksum:
   name_template: "checksums.txt"
 
