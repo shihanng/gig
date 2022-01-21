@@ -91,7 +91,7 @@ func (c *command) autogenRunE(cmd *cobra.Command, args []string) error {
 
 		content, err := readFile(path, 16*1024)
 		if err != nil {
-			return nil
+			return err
 		}
 
 		language := enry.GetLanguage(path, content)
