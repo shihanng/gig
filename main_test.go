@@ -55,6 +55,7 @@ func (s *MainTestSuite) TestGen() {
 func (s *MainTestSuite) TestCheckGitIgnoreIO() {
 	// Testing against "reactnative", "mean" is avoided because the result for stack from
 	// gitignore.io seems not in order.
+	//nolint:noctx
 	resp, err := http.Get(`https://www.toptal.com/developers/gitignore/api/django,androidstudio,java,go,ada,zsh,c,gradle`)
 	s.Require().NoError(err)
 
@@ -93,6 +94,7 @@ func (s *MainTestSuite) TestCheckGitIgnoreIO() {
 }
 
 func (s *MainTestSuite) TestList() {
+	//nolint:noctx
 	resp, err := http.Get(`https://www.toptal.com/developers/gitignore/api/list`)
 	s.Require().NoError(err)
 
