@@ -16,11 +16,11 @@ func New(path, repoSource string) (*git.Repository, error) {
 		Progress: ioutil.Discard,
 	})
 
-	switch err {
-	case nil:
+	if err == nil {
 		return repo, nil
-	case git.ErrRepositoryAlreadyExists:
-	default:
+	}
+
+	if !errors.Is(err, git.ErrRepositoryAlreadyExists) {
 		return nil, errors.Wrap(err, "repo: failed to clone")
 	}
 
