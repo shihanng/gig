@@ -27,13 +27,22 @@ func List(directory string) ([]string, error) {
 
 	var names []string
 
+	collected := map[string]struct{}{}
+
 	for _, f := range files {
 		filename := f.Name()
 		ext := filepath.Ext(filename)
-		base := strings.TrimSuffix(filename, ext)
 
-		if ext == ".gitignore" {
-			names = append(names, Canon(base))
+		if ext != ".gitignore" {
+			continue
+		}
+
+		base := strings.TrimSuffix(filename, ext)
+		name := Canon(base)
+
+		if _, found := collected[name]; !found {
+			names = append(names, name)
+			collected[name] = struct{}{}
 		}
 	}
 
