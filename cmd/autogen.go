@@ -89,6 +89,7 @@ func (c *command) autogenRunE(cmd *cobra.Command, args []string) error {
 			return nil
 		}
 
+		//nolint:gomnd
 		content, err := readFile(path, 16*1024)
 		if err != nil {
 			return err
