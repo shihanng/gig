@@ -51,7 +51,7 @@ feature is that it could not detect a framework.`,
 
 // Heavily borrowed from:
 // https://github.com/src-d/enry/blob/697929e1498cbdb7726a4d3bf4c48e706ee8c967/cmd/enry/main.go#L27
-func (c *command) autogenRunE(cmd *cobra.Command, args []string) error {
+func (c *command) autogenRunE(cmd *cobra.Command, args []string) error { // nolint:cyclop
 	templates, err := file.List(c.templatePath())
 	if err != nil {
 		return err
@@ -89,9 +89,10 @@ func (c *command) autogenRunE(cmd *cobra.Command, args []string) error {
 			return nil
 		}
 
+		//nolint:gomnd
 		content, err := readFile(path, 16*1024)
 		if err != nil {
-			return nil
+			return err
 		}
 
 		language := enry.GetLanguage(path, content)
@@ -116,6 +117,7 @@ func (c *command) autogenRunE(cmd *cobra.Command, args []string) error {
 func readFile(path string, limit int64) ([]byte, error) {
 	if limit <= 0 {
 		b, err := ioutil.ReadFile(path)
+
 		return b, errors.Wrap(err, "cmd: read file")
 	}
 

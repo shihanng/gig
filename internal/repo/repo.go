@@ -4,8 +4,8 @@ import (
 	"io/ioutil"
 
 	"github.com/cockroachdb/errors"
-	"gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing"
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 )
 
 const SourceRepo = `https://github.com/toptal/gitignore.git`
@@ -16,11 +16,11 @@ func New(path, repoSource string) (*git.Repository, error) {
 		Progress: ioutil.Discard,
 	})
 
-	switch err {
-	case nil:
+	if err == nil {
 		return repo, nil
-	case git.ErrRepositoryAlreadyExists:
-	default:
+	}
+
+	if !errors.Is(err, git.ErrRepositoryAlreadyExists) {
 		return nil, errors.Wrap(err, "repo: failed to clone")
 	}
 
@@ -40,12 +40,10 @@ func Checkout(r repoer, commitHash string) (string, error) {
 		return "", errors.Wrap(err, "repo: getting worktree")
 	}
 
-	opts := git.CheckoutOptions{}
+	opts := git.CheckoutOptions{Force: true}
 
 	if commitHash != "" {
 		opts.Hash = plumbing.NewHash(commitHash)
-	} else {
-		opts.Branch = plumbing.Master
 	}
 
 	if err := wt.Checkout(&opts); err != nil {

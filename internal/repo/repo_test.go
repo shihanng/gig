@@ -1,12 +1,13 @@
-// +build integration
+//go:build integration
 
-package repo
+package repo_test
 
 import (
 	"io/ioutil"
 	"os"
 	"testing"
 
+	"github.com/shihanng/gig/internal/repo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -29,7 +30,7 @@ func (s *RepoSuite) TearDownTest() {
 	require.NoError(s.T(), os.RemoveAll(s.tempDir))
 }
 
-// Order of the test cases is important
+// Order of the test cases is important.
 func (s *RepoSuite) TestNew() {
 	type args struct {
 		path       string
@@ -69,14 +70,14 @@ func (s *RepoSuite) TestNew() {
 
 	for _, tt := range tests {
 		s.T().Run(tt.name, func(t *testing.T) {
-			_, err := New(tt.args.path, tt.args.repoSource)
+			_, err := repo.New(tt.args.path, tt.args.repoSource)
 			tt.assertion(t, err)
 		})
 	}
 }
 
 func (s *RepoSuite) TestCheckout() {
-	repo, err := New(s.tempDir, testSourceRepo)
+	repository, err := repo.New(s.tempDir, testSourceRepo)
 	s.Require().NoError(err)
 
 	type args struct {
@@ -94,7 +95,7 @@ func (s *RepoSuite) TestCheckout() {
 			args: args{
 				commitHash: "",
 			},
-			want:      "0d23e960376c28f21bbae5966a603e2f90ca2785",
+			want:      "2ef535a7891d630d3011c14cc0314ae3b6977203",
 			assertion: assert.NoError,
 		},
 		{
@@ -117,7 +118,7 @@ func (s *RepoSuite) TestCheckout() {
 
 	for _, tt := range tests {
 		s.T().Run(tt.name, func(t *testing.T) {
-			got, err := Checkout(repo, tt.args.commitHash)
+			got, err := repo.Checkout(repository, tt.args.commitHash)
 			tt.assertion(t, err)
 			assert.Equal(t, tt.want, got)
 		})

@@ -1,8 +1,9 @@
-package order
+package order_test
 
 import (
 	"testing"
 
+	"github.com/shihanng/gig/internal/order"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -43,7 +44,7 @@ func TestReadOrder(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ReadOrder(tt.args.path)
+			got, err := order.ReadOrder(tt.args.path)
 			tt.assertion(t, err)
 			assert.Equal(t, tt.want, got)
 		})
