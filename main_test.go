@@ -1,4 +1,4 @@
-// +build integration
+//go:build integration
 
 package main
 
@@ -24,13 +24,13 @@ type MainTestSuite struct {
 	tempDir string
 }
 
-func (s *MainTestSuite) SetupSuite() {
+func (s *MainTestSuite) SetupTest() {
 	dir, err := ioutil.TempDir("", "gig")
 	s.Require().NoError(err)
 	s.tempDir = dir
 }
 
-func (s *MainTestSuite) TearDownSuite() {
+func (s *MainTestSuite) TearDownTest() {
 	s.Require().NoError(os.RemoveAll(s.tempDir))
 }
 
@@ -55,7 +55,7 @@ func (s *MainTestSuite) TestGen() {
 func (s *MainTestSuite) TestCheckGitIgnoreIO() {
 	// Testing against "reactnative", "mean" is avoided because the result for stack from
 	// gitignore.io seems not in order.
-	resp, err := http.Get(`https://www.gitignore.io/api/django,androidstudio,java,go,ada,zsh,c,gradle`)
+	resp, err := http.Get(`https://www.toptal.com/developers/gitignore/api/django,androidstudio,java,go,ada,zsh,c,gradle`)
 	s.Require().NoError(err)
 
 	defer resp.Body.Close()
@@ -70,7 +70,7 @@ func (s *MainTestSuite) TestCheckGitIgnoreIO() {
 
 		content := scanner.Text()
 
-		if strings.HasPrefix(content, `# End of https://www.gitignore.io/api/`) {
+		if strings.HasPrefix(content, `# End of https://www.toptal.com/developers/gitignore/api/django,androidstudio,java,go,ada,zsh,c,gradle`) {
 			break
 		}
 
@@ -92,7 +92,7 @@ func (s *MainTestSuite) TestCheckGitIgnoreIO() {
 }
 
 func (s *MainTestSuite) TestList() {
-	resp, err := http.Get(`https://www.gitignore.io/api/list`)
+	resp, err := http.Get(`https://www.toptal.com/developers/gitignore/api/list`)
 	s.Require().NoError(err)
 
 	defer resp.Body.Close()
@@ -100,15 +100,15 @@ func (s *MainTestSuite) TestList() {
 	expected, err := ioutil.ReadAll(resp.Body)
 	s.Require().NoError(err)
 
-	expectedS := bytes.Split(bytes.ReplaceAll(expected, []byte(","), []byte("\n")), []byte("\n"))
+	expectedS := strings.Split(strings.ReplaceAll(string(expected), ",", "\n"), "\n")
 
-	os.Args = []string{"gig", "--cache-path", s.tempDir, "-c", "640f03b1f9906c5dcb788d36ec5c1095264a10ae", "list"}
+	os.Args = []string{"gig", "--cache-path", s.tempDir, "list"}
 
 	actual := new(bytes.Buffer)
 
 	cmd.Execute(actual, "test")
 
-	actualS := bytes.Split(bytes.ToLower(actual.Bytes()), []byte("\n"))
+	actualS := strings.Split(strings.ToLower(actual.String()), "\n")
 	actualS = actualS[:len(actualS)-1]
 
 	s.Assert().Equal(expectedS, actualS)
