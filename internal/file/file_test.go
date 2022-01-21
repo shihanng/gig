@@ -629,7 +629,7 @@ func TestGenerate(t *testing.T) {
 			goldenPath := filepath.Join(`_golden`, tt.wantW)
 
 			if *update {
-				require.NoError(t, ioutil.WriteFile(goldenPath, w.Bytes(), 0644))
+				require.NoError(t, ioutil.WriteFile(goldenPath, w.Bytes(), 0600))
 			}
 
 			expected, err := ioutil.ReadFile(goldenPath)

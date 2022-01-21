@@ -44,7 +44,7 @@ func (s *MainTestSuite) TestGen() {
 	goldenPath := `./testdata/gen.golden`
 
 	if *update {
-		s.Require().NoError(ioutil.WriteFile(goldenPath, actual.Bytes(), 0644))
+		s.Require().NoError(ioutil.WriteFile(goldenPath, actual.Bytes(), 0600))
 	}
 
 	expected, err := ioutil.ReadFile(goldenPath)
@@ -140,7 +140,7 @@ func (s *MainTestSuite) TestAutogen() {
 	goldenPath := `./testdata/autogen.golden`
 
 	if *update {
-		s.Require().NoError(ioutil.WriteFile(goldenPath, actual.Bytes(), 0644))
+		s.Require().NoError(ioutil.WriteFile(goldenPath, actual.Bytes(), 0600))
 	}
 
 	expected, err := ioutil.ReadFile(goldenPath)
