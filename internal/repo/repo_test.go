@@ -30,7 +30,7 @@ func (s *RepoSuite) TearDownTest() {
 	require.NoError(s.T(), os.RemoveAll(s.tempDir))
 }
 
-// Order of the test cases is important
+// Order of the test cases is important.
 func (s *RepoSuite) TestNew() {
 	type args struct {
 		path       string

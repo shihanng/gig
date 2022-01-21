@@ -170,6 +170,7 @@ func (w *writer) Write(out *errWriter, filenames ...string) error {
 				}
 
 				out.fprintf("%s\n", content)
+
 				w.duplicates[content] = true
 			}
 

@@ -116,6 +116,7 @@ func (c *command) autogenRunE(cmd *cobra.Command, args []string) error {
 func readFile(path string, limit int64) ([]byte, error) {
 	if limit <= 0 {
 		b, err := ioutil.ReadFile(path)
+
 		return b, errors.Wrap(err, "cmd: read file")
 	}
 
