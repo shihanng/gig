@@ -1,4 +1,4 @@
-package file
+package file_test
 
 import (
 	"bytes"
@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/shihanng/gig/internal/file"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -544,7 +545,7 @@ func TestList(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := List(tt.args.directory)
+			got, err := file.List(tt.args.directory)
 			tt.assertion(t, err)
 			assert.Equal(t, tt.want, got)
 		})
@@ -622,7 +623,7 @@ func TestGenerate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			w := &bytes.Buffer{}
-			err := Generate(w, `testdata`, tt.args.items...)
+			err := file.Generate(w, `testdata`, tt.args.items...)
 			tt.assertion(t, err)
 
 			goldenPath := filepath.Join(`_golden`, tt.wantW)
@@ -640,5 +641,5 @@ func TestGenerate(t *testing.T) {
 
 func TestGenerate_UnknownDirectory(t *testing.T) {
 	w := &bytes.Buffer{}
-	assert.Error(t, Generate(w, `unknown`))
+	assert.Error(t, file.Generate(w, `unknown`))
 }

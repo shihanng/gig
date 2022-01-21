@@ -1,8 +1,9 @@
-package file
+package file_test
 
 import (
 	"testing"
 
+	"github.com/shihanng/gig/internal/file"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -89,7 +90,7 @@ func TestSort(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.want, Sort(tt.args.items, tt.args.specialOrder))
+			assert.Equal(t, tt.want, file.Sort(tt.args.items, tt.args.specialOrder))
 		})
 	}
 }
