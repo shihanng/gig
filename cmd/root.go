@@ -28,11 +28,11 @@ import (
 
 	"github.com/OpenPeeDeeP/xdg"
 	"github.com/cockroachdb/errors"
+	"github.com/go-git/go-git/v5/utils/ioutil"
 	"github.com/shihanng/gig/internal/file"
 	"github.com/shihanng/gig/internal/order"
 	"github.com/shihanng/gig/internal/repo"
 	"github.com/spf13/cobra"
-	"gopkg.in/src-d/go-git.v4/utils/ioutil"
 )
 
 func Execute(w io.Writer, version string) {

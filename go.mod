@@ -8,6 +8,7 @@ require (
 	github.com/cockroachdb/errors v1.2.4
 	github.com/cockroachdb/logtags v0.0.0-20190617123548-eb05cc24525f // indirect
 	github.com/getsentry/raven-go v0.2.0 // indirect
+	github.com/go-git/go-git/v5 v5.4.2
 	github.com/gogo/protobuf v1.3.1 // indirect
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/pelletier/go-toml v1.6.0 // indirect
@@ -17,8 +18,6 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.6.1 // indirect
 	github.com/src-d/enry/v2 v2.1.0
-	github.com/stretchr/testify v1.3.0
-	golang.org/x/sys v0.0.0-20191210023423-ac6580df4449 // indirect
-	gopkg.in/src-d/go-git.v4 v4.13.1
-	gopkg.in/yaml.v2 v2.2.7 // indirect
+	github.com/stretchr/objx v0.2.0 // indirect
+	github.com/stretchr/testify v1.7.0
 )

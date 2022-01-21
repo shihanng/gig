@@ -4,8 +4,8 @@ import (
 	"io/ioutil"
 
 	"github.com/cockroachdb/errors"
-	"gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing"
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 )
 
 const SourceRepo = `https://github.com/toptal/gitignore.git`
