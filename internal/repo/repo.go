@@ -40,12 +40,10 @@ func Checkout(r repoer, commitHash string) (string, error) {
 		return "", errors.Wrap(err, "repo: getting worktree")
 	}
 
-	opts := git.CheckoutOptions{}
+	opts := git.CheckoutOptions{Force: true}
 
 	if commitHash != "" {
 		opts.Hash = plumbing.NewHash(commitHash)
-	} else {
-		opts.Branch = plumbing.Master
 	}
 
 	if err := wt.Checkout(&opts); err != nil {
