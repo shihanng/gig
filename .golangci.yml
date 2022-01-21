@@ -4,6 +4,16 @@ run:
 
 linters:
   enable-all: true
+  disable:
+    - exhaustivestruct
+    - gofumpt
+    - golint
+    - interfacer
+    - maligned
+    - paralleltest
+    - scopelint
+    - varnamelen
+    - wrapcheck
 
 issues:
   exclude-rules:
