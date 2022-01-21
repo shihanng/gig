@@ -29,8 +29,3 @@ issues:
       linters:
         - lll
       text: "line is 146 characters"
-
-    - path: cmd/search.go
-      linters:
-        - gosec
-      text: "G204: Subprocess launched with function call as argument or cmd arguments"

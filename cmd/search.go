@@ -57,6 +57,7 @@ for the search functionality.`,
 				cmdArgs[0] = "/c"
 			}
 
+			//nolint:gosec
 			shCmd := exec.Command(cmdName, append(cmdArgs, c.searchTool)...)
 
 			shCmd.Stdin = strings.NewReader(templateStr)
