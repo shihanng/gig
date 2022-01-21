@@ -68,6 +68,7 @@ for the search functionality.`,
 				if errors.As(err, &ee) && ee.ExitCode() == 130 {
 					return nil
 				}
+
 				return errors.Wrap(err, "cmd: searching")
 			}
 
