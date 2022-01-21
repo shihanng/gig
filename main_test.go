@@ -70,6 +70,7 @@ func (s *MainTestSuite) TestCheckGitIgnoreIO() {
 
 		content := scanner.Text()
 
+		//nolint:lll
 		if strings.HasPrefix(content, `# End of https://www.toptal.com/developers/gitignore/api/django,androidstudio,java,go,ada,zsh,c,gradle`) {
 			break
 		}
