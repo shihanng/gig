@@ -1,4 +1,4 @@
-// +build integration
+//go:build integration
 
 package repo
 
@@ -94,7 +94,7 @@ func (s *RepoSuite) TestCheckout() {
 			args: args{
 				commitHash: "",
 			},
-			want:      "0d23e960376c28f21bbae5966a603e2f90ca2785",
+			want:      "2ef535a7891d630d3011c14cc0314ae3b6977203",
 			assertion: assert.NoError,
 		},
 		{
