@@ -17,6 +17,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+//nolint:gochecknoglobals
 var update = flag.Bool("update", false, "update .golden files")
 
 type MainTestSuite struct {

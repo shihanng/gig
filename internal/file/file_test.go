@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+//nolint:gochecknoglobals
 var update = flag.Bool("update", false, "update .golden files")
 
 func TestList(t *testing.T) {

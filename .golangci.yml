@@ -7,17 +7,6 @@ linters:
 
 issues:
   exclude-rules:
-    - path: _test\.go
-      linters:
-        - scopelint
-      text: Using the variable on range scope `(tc|tt)` in function literal
-
-    # For golden file
-    - path: (file|main)_test\.go
-      linters:
-        - gochecknoglobals
-      text: "`update` is a global variable"
-
     # Usually we have table driven tests which make the test function too long.
     - path: _test\.go
       linters:

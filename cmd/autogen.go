@@ -51,7 +51,7 @@ feature is that it could not detect a framework.`,
 
 // Heavily borrowed from:
 // https://github.com/src-d/enry/blob/697929e1498cbdb7726a4d3bf4c48e706ee8c967/cmd/enry/main.go#L27
-func (c *command) autogenRunE(cmd *cobra.Command, args []string) error {
+func (c *command) autogenRunE(cmd *cobra.Command, args []string) error { // nolint:cyclop
 	templates, err := file.List(c.templatePath())
 	if err != nil {
 		return err
