@@ -19,7 +19,7 @@ archives:
       amd64: x86_64
 
 brews:
-  - github:
+  - tap:
       owner: shihanng
       name: homebrew-gig
     commit_author:
