@@ -107,11 +107,11 @@ Where `test` run the tests that can be run locally.
 `integ-test` run the tests that require internet access.
 `lint` help you write better Go codes.
 
-Add subcommand with [cobra](https://github.com/spf13/cobra)
+Add subcommand with [cobra-cli](https://github.com/spf13/cobra-cli)
 (version managed in [tools.go](./tools.go) with [go.mod](./go.mod)):
 
 ```
-$ cobra --config .cobra.yaml add <new subcommand>
+$ cobra-cli --config .cobra-cli.yaml add <new subcommand>
 ```
 
 Update golden file:
